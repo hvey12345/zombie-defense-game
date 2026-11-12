@@ -169,23 +169,24 @@ document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: fals
   quick.innerHTML = [
     '<button data-act="same">全选<br>同类</button>',
     '<button data-act="clear">取消<br>选中</button>',
+    '<button data-act="reload">换弹</button>',
     '<button data-act="skill" aria-label="技能"><img src="assets/icons/skill_strike.png" alt=""><span class="cd"></span></button>',
   ].join('');
   document.body.appendChild(quick);
 
-  // 技能竖列（纯图标 + 角标）：炮击 / 燃烧弹 / 空降兵 / 换弹
+  // 技能竖列（纯图标 + 角标）：炮击 / 燃烧弹 / 空降兵
   const pop = document.createElement('div');
   pop.id = 'mskillpop';
   pop.innerHTML = [
     ['strike', 'assets/icons/skill_strike.png'],
     ['fire', 'assets/icons/skill_fire.png'],
     ['airdrop', 'assets/icons/skill_airdrop.png'],
-    ['reload', 'assets/icons/reload.png'],
   ].map(([id, ico]) => '<button data-id="' + id + '"><img src="' + ico + '" alt=""><span class="cd"></span></button>').join('');
   document.body.appendChild(pop);
   const qSkill = quick.querySelector('[data-act="skill"]');
   const qSame = quick.querySelector('[data-act="same"]');
   const qClear = quick.querySelector('[data-act="clear"]');
+  const qReload = quick.querySelector('[data-act="reload"]');
 
   let dimTimer = 0;
   function wake() {
@@ -204,6 +205,12 @@ document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: fals
     const picked = v && (v.sel > 0 || v.selCore || v.selF || v.selNode);
     qSame.classList.toggle('off', !picked);
     qClear.classList.toggle('off', !picked);
+    // 换弹：跟桌面版原按钮的可点状态同步
+    const rs = document.getElementById('btn-reload');
+    if (rs && qReload) {
+      const off = rs.classList.contains('na') || rs.classList.contains('locked') || rs.disabled;
+      qReload.classList.toggle('off', off);
+    }
   }
   syncQuick();
   setInterval(syncQuick, 350);
@@ -225,13 +232,6 @@ document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: fals
       if (b1) b1.textContent = txt;
       btn.classList.toggle('off', cooling || poor);
     }
-    // 换弹：跟着原按钮的可点状态
-    const rSrc = document.getElementById('btn-reload');
-    const rDst = pop.querySelector('[data-id="reload"]');
-    if (rSrc && rDst) {
-      const off = rSrc.classList.contains('na') || rSrc.classList.contains('locked') || rSrc.disabled;
-      rDst.classList.toggle('off', off);
-    }
     const badge = qSkill.querySelector('.cd');
     if (badge) badge.textContent = ready > 0 ? String(ready) : '';
     qSkill.classList.toggle('off', ready === 0);
@@ -247,13 +247,8 @@ document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: fals
     const btn = e.target.closest('button[data-id]');
     if (!btn) return;
     const id = btn.dataset.id;
-    if (id === 'reload') {
-      const rb = document.getElementById('btn-reload');
-      if (rb) rb.click();
-    } else {
-      const src = document.getElementById('skill-' + id);
-      if (src) src.click();
-    }
+    const src = document.getElementById('skill-' + id);
+    if (src) src.click();
     pop.classList.remove('open');
   });
 
@@ -270,6 +265,9 @@ document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: fals
       }
     } else if (act === 'clear') {
       if (window.__dclSel) window.__dclSel.clearAll();
+    } else if (act === 'reload') {
+      const rb = document.getElementById('btn-reload');
+      if (rb) rb.click();
     }
     syncQuick();
   });
