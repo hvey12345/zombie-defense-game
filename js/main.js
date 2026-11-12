@@ -4073,7 +4073,7 @@ setZVary(localStorage.getItem('dcl.zvary') !== '0');
   } else if (wantState === 'title' && P.auto) {
     startGame({ seed: P.seed || 0, auto: true, wave: P.wave || 0, pause: P.pause === true });
   }
-  const VER = 'raid-2026-11-12';
+  const VER = 'raid-2026-11-13';
   window.__dclBuild = VER;
   const verEl = $('build-ver');
   if (verEl) verEl.textContent = `版本 ${VER}`;

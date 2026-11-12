@@ -338,3 +338,42 @@ function syncOrient() {
 window.addEventListener('resize', () => { fitCanvas(); syncOrient(); });
 window.addEventListener('orientationchange', () => { fitCanvas(); syncOrient(); });
 syncOrient();
+
+// ===== v22：底栏三行单位信息 / 生产格造价缩写 =====
+(function mobileInfo() {
+  const tag = document.querySelector('#buildbar .src-tag');
+  if (!tag) return;
+  let l3 = document.getElementById('msrc3');
+  if (!l3) {
+    l3 = document.createElement('span');
+    l3.id = 'msrc3';
+    tag.appendChild(l3);
+  }
+  // 造价里的「+2件」缩成「+2」，省宽度
+  function trimCosts() {
+    const list = document.getElementById('prod-list');
+    if (!list) return;
+    for (const i of list.querySelectorAll('.prod-item i')) {
+      const t = i.textContent;
+      if (t && t.indexOf('件') >= 0) {
+        i.textContent = t.replace(/\s*\+\s*(\d+)\s*件/, '+$1');
+      }
+    }
+  }
+  function syncLine3() {
+    const armor = document.getElementById('ui-armor');
+    const note = document.getElementById('ui-note');
+    const a = armor ? armor.textContent.replace(/（.*?）\s*$/, '').trim() : '';
+    let n = note ? note.textContent.trim() : '';
+    // 去掉「姿态：…」这段，手机版空间留给护甲/克制/弹夹
+    n = n.replace(/^姿态：[^·]*·\s*/, '').replace(/^姿态：[^·]*$/, '').trim();
+    if (n.indexOf(' · ') === 0) n = n.slice(3);
+    const parts = [];
+    if (a && a !== '—') parts.push('护甲 ' + a);
+    if (n) parts.push(n);
+    l3.textContent = parts.join(' · ');
+  }
+  trimCosts();
+  syncLine3();
+  setInterval(() => { trimCosts(); syncLine3(); }, 400);
+})();

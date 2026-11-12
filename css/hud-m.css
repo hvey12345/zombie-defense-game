@@ -529,3 +529,25 @@ body.touch #mtools button[data-kind="skill"] b { font-size: 11px; white-space: n
 
 /* ===== v21：技能只在 ☰ 里，底部浮条不再重复放技能 ===== */
 body.touch #skillbar { display: none !important; }
+
+/* ===== v22：顶栏精简 + 倍速留右 + 生产格常显造价 + 三行单位信息 ===== */
+body.touch #topbar .stat.compact { display: none !important; }      /* 资源点/僵尸/叛军 */
+body.touch #topbar #btn-restart,
+body.touch #topbar #btn-sound { display: none !important; }
+body.touch #topbar #btn-speed { margin-left: 4px; }
+
+body.touch.hud-lite #buildbar { height: 80px; }
+body.touch.hud-lite #buildbar .src-tag {
+  display: flex !important; flex-direction: column; justify-content: center;
+  width: 214px; min-width: 214px; padding: 2px 8px 2px 6px; gap: 1px;
+}
+body.touch #buildbar .src-tag b { font-size: 12px; line-height: 1.15; }
+body.touch #buildbar .src-tag > span,
+body.touch #buildbar .src-tag #msrc3 {
+  font-size: 9px; line-height: 1.2; color: #9fb6cc;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+body.touch #buildbar .prod-item { min-width: 46px; max-width: 58px; height: 56px; }
+body.touch #buildbar .prod-item i {
+  display: block !important; font-size: 8px; line-height: 1; margin-top: 1px; color: #9fb6cc;
+}
