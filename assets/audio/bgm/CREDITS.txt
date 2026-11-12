@@ -1,0 +1,13 @@
+Mixkit — Mysterious Bass Pulse
+https://mixkit.co/free-sound-effects/
+
+Mixkit Free License：可免费用于商业/非商业项目，无需署名；
+但不得将音效文件本身单独再分发（作为游戏内置资源使用不受限）。
+
+本目录的 rust-pulse.wav 由 mixkit-mystwrious-bass-pulse-2298.wav 处理而来：
+裁掉尾部 0.514s 静音 → 首尾 150ms 交叉淡化 → 15.892s 无缝循环（44.1kHz 立体声 16bit）。
+
+本目录另一支：forest-suspense.wav
+源自 mixkit-suspense-mystery-bass-685.wav，同样 Mixkit Free License。
+处理：掐掉起音前 0.12s 静音、取 32s、首尾 150ms 交叉淡化、归一化到 −15 dBFS、
+首尾各 3ms 淡入淡出 => 31.85s 无缝循环（44.1kHz 立体声 16bit）。

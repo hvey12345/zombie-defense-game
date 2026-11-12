@@ -1,0 +1,8 @@
+The Free Firearm Sound Library (CC0)
+https://opengameart.org/content/the-free-firearm-sound-library
+
+这些声音由 Ben Jaszczak、Brian Nelson、Kevin Heras 和 Matthew Nanney 创作和录制。
+
+本目录下的 rifle1 / mg2 / lmg2 / sg1 / sniper2 / cannon2 / cannon2b /
+mortar2 / hero1 / turret2 / rrifle1 / rveh1 均由该素材包裁剪、重采样而来
+（单发抠取 → 44.1kHz 单声道 16bit），处理脚本见 tools/make_gun_samples.py。

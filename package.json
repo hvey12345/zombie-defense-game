@@ -1,0 +1,11 @@
+{
+  "name": "dead-city-line-mvp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "死城防线 MVP：纯前端 Canvas 俯视角城市沙盘僵尸布防原型",
+  "scripts": {
+    "sim": "node tools/sim.mjs 5",
+    "serve": "python -m http.server 8123"
+  }
+}
