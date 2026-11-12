@@ -159,11 +159,21 @@ document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: fals
   const box = document.createElement('div');
   box.id = 'mtools';
   box.innerHTML = [
-    ['strike', 'skill_strike', '炮击'],
-    ['fire', 'skill_fire', '燃烧弹'],
-    ['airdrop', 'skill_airdrop', '空降兵'],
-  ].map(([id, ico, nm]) => '<button data-kind="skill" data-id="' + id + '"><img src="assets/icons/' + ico + '.png" alt=""><b>' + nm + '</b><span class="cd"></span></button>').join('');
+    ['strike', '炮击'],
+    ['fire', '燃烧弹'],
+    ['airdrop', '空降兵'],
+  ].map(([id, nm]) => '<button data-kind="skill" data-id="' + id + '"><img src="assets/icons/' + id + '.png" alt=""><b>' + nm + '</b><span class="cd"></span></button>').join('');
   document.body.appendChild(box);
+  // 图标直接抄桌面技能按钮的（空降兵用的是 infantry.png，不是 skill_airdrop.png）
+  for (const b of box.querySelectorAll('button[data-kind="skill"]')) {
+    const src = document.getElementById('skill-' + b.dataset.id);
+    const im = src && src.querySelector('img');
+    const tgt = b.querySelector('img');
+    if (im && tgt) {
+      const u = im.getAttribute('src');
+      if (u) tgt.setAttribute('src', u);
+    }
+  }
 
   // 常驻常用键：全选同类 / 取消选中（右缘竖排，3 秒无操作自动淡出）
   const quick = document.createElement('div');
