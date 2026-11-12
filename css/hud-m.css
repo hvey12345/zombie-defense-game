@@ -570,3 +570,26 @@ body.touch #buildbar #msrc2 {
   display: none;
 }
 body.touch #mperf { display: block; }
+
+/* ===== v24：窄屏（<=660 CSS px）顶栏再压一档，避免三组叠字 ===== */
+@media (max-width: 660px) {
+  body.touch #topbar { gap: 6px; padding: 0 6px; }
+  body.touch #topbar .tb-left { gap: 6px; }
+  body.touch #topbar .tb-right { gap: 4px; }
+  body.touch #topbar .stat { font-size: 11px; }
+  body.touch #topbar .stat b { font-size: 12px; }
+  body.touch #topbar .stat .lbl { font-size: 9px; }
+  body.touch #topbar .res { gap: 3px; padding: 0 5px; }
+  body.touch #topbar .res b { font-size: 15px; }
+  body.touch #topbar .res img { width: 16px; height: 16px; }
+  body.touch #topbar .res s { font-size: 9px; }
+  body.touch #hud-corebar { width: 70px !important; }
+  body.touch #topbar .tb-right button { padding: 0 8px; font-size: 12px; }
+}
+
+/* ===== v25：矮屏（<=380 CSS px 高）压缩右缘按钮，避免压住 ☰ ===== */
+@media (max-height: 380px) {
+  body.touch #mquick { gap: 5px; }
+  body.touch #mquick button { height: 38px; font-size: 11px; border-radius: 9px; }
+  body.touch #mquick button[data-act="deploy"] { height: 38px; }
+}

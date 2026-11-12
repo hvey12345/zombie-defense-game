@@ -362,7 +362,7 @@ syncOrient();
       const r = txt('ui-range');
       const rt = txt('ui-rate');
       const parts = [];
-      if (d && d !== '—') parts.push('伤害 ' + d.replace(/\s*\(.*\)\s*$/, ''));
+      if (d && d !== '—') parts.push('伤害 ' + d.replace(/\s*[（(].*[)）]\s*$/, ''));
       if (r && r !== '—') parts.push('射程 ' + r);
       if (rt && rt !== '—') parts.push('射速 ' + rt);
       l2.textContent = parts.join(' · ');
