@@ -1037,15 +1037,18 @@ function setResultArt(won) {
   // 压暗去饱和后只剩轮廓，正好读作“就剩她一个还跪在这里”。
   if (L) {
     L.onerror = null;
-    if (won) {
-      L.src = 'assets/portraits/art-left.png';
-    } else {
-      // WebP 只有 PNG 的 1/7，老浏览器不支持时回落原图
-      L.onerror = () => { L.onerror = null; L.src = 'assets/portraits/art-lose.png'; };
-      L.src = 'assets/portraits/art-lose.webp';
-    }
+    // WebP 只有 PNG 的 1/7，老浏览器不支持时回落原图
+    const pick = (img, webp, png) => {
+      img.onerror = () => { img.onerror = null; img.src = png; };
+      img.src = webp;
+    };
+    if (won) pick(L, 'assets/portraits/art-left.webp', 'assets/portraits/art-left.png');
+    else pick(L, 'assets/portraits/art-lose.webp', 'assets/portraits/art-lose.png');
   }
-  if (R) R.src = 'assets/portraits/art-right.png';
+  if (R) {
+    R.onerror = () => { R.onerror = null; R.src = 'assets/portraits/art-right.png'; };
+    R.src = 'assets/portraits/art-right.webp';
+  }
   document.body.classList.toggle('menu-win', !!won);
   document.body.classList.toggle('menu-lose', !won);
 }
