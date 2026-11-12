@@ -551,3 +551,22 @@ body.touch #buildbar .prod-item { min-width: 46px; max-width: 58px; height: 56px
 body.touch #buildbar .prod-item i {
   display: block !important; font-size: 8px; line-height: 1; margin-top: 1px; color: #9fb6cc;
 }
+
+/* ===== v23：右缘三枚（无换弹）+ ☰ 对齐；单位面板两行、宽 180 ===== */
+body.touch #mquick { gap: 7px; }
+body.touch #mfab { right: 64px; }
+body.touch.bar-open #mfab { right: 64px; }
+body.touch.hud-lite #buildbar { height: 66px; }
+body.touch.hud-lite #buildbar .src-tag { width: 180px; min-width: 180px; padding: 1px 6px; }
+body.touch #buildbar #msrc2 {
+  font-size: 9px; line-height: 1.2; color: #9fb6cc;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#mperf {
+  position: fixed; left: 6px; top: 42px; z-index: 80;
+  padding: 2px 6px; border-radius: 6px;
+  background: rgba(6, 12, 20, 0.86); color: #9fd4ff;
+  font: 11px/1.4 ui-monospace, Consolas, monospace; pointer-events: none;
+  display: none;
+}
+body.touch #mperf { display: block; }

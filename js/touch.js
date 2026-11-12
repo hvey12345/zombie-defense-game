@@ -181,7 +181,6 @@ document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: fals
   quick.innerHTML = [
     '<button data-act="same">全选<br>同类</button>',
     '<button data-act="clear">取消<br>选中</button>',
-    '<button data-act="reload">换弹</button>',
     '<button data-act="deploy">架设</button>',
   ].join('');
   document.body.appendChild(quick);
@@ -189,7 +188,7 @@ document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: fals
   const qDeploy = quick.querySelector('[data-act="deploy"]');
   const qSame = quick.querySelector('[data-act="same"]');
   const qClear = quick.querySelector('[data-act="clear"]');
-  const qReload = quick.querySelector('[data-act="reload"]');
+
 
   let dimTimer = 0;
   function wake() {
@@ -213,7 +212,6 @@ document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: fals
         dst.classList.toggle('off', off);
       }
     };
-    mirror('btn-reload', qReload);
     mirror('btn-deploy', qDeploy);
   }
   syncQuick();
@@ -256,9 +254,6 @@ document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: fals
       }
     } else if (act === 'clear') {
       if (window.__dclSel) window.__dclSel.clearAll();
-    } else if (act === 'reload') {
-      const rb = document.getElementById('btn-reload');
-      if (rb) rb.click();
     } else if (act === 'deploy') {
       if (window.__dclSel) window.__dclSel.deploy();
     }
@@ -317,7 +312,7 @@ document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: fals
 })();
 
 // 画布铺满视口：改 backing store，宽高比跟设备一致，避免信箱黑边与拉伸
-const DPR = Math.min(2, window.devicePixelRatio || 1);
+const DPR = Math.min(1.5, window.devicePixelRatio || 1);   // v23：手机上省 44% 像素填充
 function fitCanvas() {
   const w = Math.round(window.innerWidth * DPR);
   const h = Math.round(window.innerHeight * DPR);
@@ -339,41 +334,74 @@ window.addEventListener('resize', () => { fitCanvas(); syncOrient(); });
 window.addEventListener('orientationchange', () => { fitCanvas(); syncOrient(); });
 syncOrient();
 
-// ===== v22：底栏三行单位信息 / 生产格造价缩写 =====
+// ===== v23：底栏两行（名称血量 / 伤害·射程·射速）+ 生产格造价缩写 + perf 面板 =====
 (function mobileInfo() {
   const tag = document.querySelector('#buildbar .src-tag');
   if (!tag) return;
-  let l3 = document.getElementById('msrc3');
-  if (!l3) {
-    l3 = document.createElement('span');
-    l3.id = 'msrc3';
-    tag.appendChild(l3);
+  let l2 = document.getElementById('msrc2');
+  if (!l2) {
+    l2 = document.createElement('span');
+    l2.id = 'msrc2';
+    tag.appendChild(l2);
   }
-  // 造价里的「+2件」缩成「+2」，省宽度
+  const sub = document.getElementById('src-sub');
   function trimCosts() {
     const list = document.getElementById('prod-list');
     if (!list) return;
     for (const i of list.querySelectorAll('.prod-item i')) {
       const t = i.textContent;
-      if (t && t.indexOf('件') >= 0) {
-        i.textContent = t.replace(/\s*\+\s*(\d+)\s*件/, '+$1');
-      }
+      if (t && t.indexOf('件') >= 0) i.textContent = t.replace(/\s*\+\s*(\d+)\s*件/, '+$1');
     }
   }
-  function syncLine3() {
-    const armor = document.getElementById('ui-armor');
-    const note = document.getElementById('ui-note');
-    const a = armor ? armor.textContent.replace(/（.*?）\s*$/, '').trim() : '';
-    let n = note ? note.textContent.trim() : '';
-    // 去掉「姿态：…」这段，手机版空间留给护甲/克制/弹夹
-    n = n.replace(/^姿态：[^·]*·\s*/, '').replace(/^姿态：[^·]*$/, '').trim();
-    if (n.indexOf(' · ') === 0) n = n.slice(3);
-    const parts = [];
-    if (a && a !== '—') parts.push('护甲 ' + a);
-    if (n) parts.push(n);
-    l3.textContent = parts.join(' · ');
+  const txt = (id) => { const e = document.getElementById(id); return e ? e.textContent.trim() : ''; };
+  function syncPanel() {
+    const app = window.__dcl;
+    const pickedUnit = !!(app && app.sel && app.sel.size > 0);
+    if (pickedUnit) {
+      const d = txt('ui-dmg');
+      const r = txt('ui-range');
+      const rt = txt('ui-rate');
+      const parts = [];
+      if (d && d !== '—') parts.push('伤害 ' + d.replace(/\s*\(.*\)\s*$/, ''));
+      if (r && r !== '—') parts.push('射程 ' + r);
+      if (rt && rt !== '—') parts.push('射速 ' + rt);
+      l2.textContent = parts.join(' · ');
+      l2.style.display = '';
+      if (sub) sub.style.display = 'none';
+    } else {
+      l2.style.display = 'none';
+      if (sub) sub.style.display = '';
+    }
   }
   trimCosts();
-  syncLine3();
-  setInterval(() => { trimCosts(); syncLine3(); }, 400);
+  syncPanel();
+  setInterval(() => { trimCosts(); syncPanel(); }, 300);
+})();
+
+// ===== v23：?perf=1 性能浮层（FPS / 帧耗时 / 实体数）=====
+(function perf() {
+  if (!/[?&]perf=1/.test(location.search)) return;
+  const box = document.createElement('div');
+  box.id = 'mperf';
+  document.body.appendChild(box);
+  let last = 0, acc = 0, n = 0, fps = 0;
+  function tick(t) {
+    if (last) {
+      const dt = t - last;
+      acc += dt; n += 1;
+    }
+    last = t;
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+  setInterval(() => {
+    if (n > 0) { fps = Math.round(1000 / (acc / n)); acc = 0; n = 0; }
+    const run = window.__dcl && window.__dcl.run;
+    const z = run ? run.zombies.length : 0;
+    const u = run ? run.units.length : 0;
+    const rd = run ? (run.raiders ? run.raiders.length : 0) : 0;
+    const dc = run && run.decals ? run.decals.length : 0;
+    const dpr = Math.min(1.5, window.devicePixelRatio || 1);
+    box.textContent = `FPS ${fps} · 僵尸 ${z} · 我方 ${u} · 叛军 ${rd} · 痕迹 ${dc} · DPR ${dpr.toFixed(1)} · ${window.innerWidth}×${window.innerHeight}`;
+  }, 500);
 })();
