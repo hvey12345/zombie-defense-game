@@ -1278,3 +1278,54 @@ body.menu-open .hud-art {
   font-size: 11px;
   line-height: 1.6;
 }
+
+
+/* ---------- 启动遮罩（首屏加载进度） ---------- */
+.boot {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(120% 90% at 50% 40%, #101a26 0%, #080b10 70%);
+  transition: opacity 0.38s ease;
+}
+.boot.done { opacity: 0; pointer-events: none; }
+.boot-inner { text-align: center; }
+.boot-title {
+  font-size: 34px;
+  letter-spacing: 10px;
+  color: #eaf2fb;
+  font-weight: 700;
+  text-indent: 10px;
+}
+.boot-sub {
+  margin-top: 6px;
+  font-size: 11px;
+  letter-spacing: 4px;
+  color: #7d8fa4;
+  text-transform: uppercase;
+}
+.boot-track {
+  width: 260px;
+  height: 4px;
+  margin: 26px auto 0;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+#boot-bar {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #4a8fd4, #7fc4ff);
+  transition: width 0.18s ease;
+}
+.boot-note {
+  margin-top: 12px;
+  font-size: 12px;
+  color: #7d8fa4;
+  font-variant-numeric: tabular-nums;
+}

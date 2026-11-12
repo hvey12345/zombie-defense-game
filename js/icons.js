@@ -64,13 +64,19 @@ for (const z of Object.values(ZOMBIES)) {
   }
 }
 
-export function loadIcons(onDone) {
+export const ICON_TOTAL = Object.keys(ICON_SRC).length;
+
+export function loadIcons(onDone, onProgress) {
   const names = Object.keys(ICON_SRC);
   if (!names.length) { onDone && onDone(); return; }
   let left = names.length;
   for (const n of names) {
     const img = new Image();
-    img.onload = () => { RAW[n] = img; if (--left === 0 && onDone) onDone(); };
+    img.onload = () => {
+      RAW[n] = img;
+      if (onProgress) onProgress(ICON_TOTAL - left + 1, ICON_TOTAL);
+      if (--left === 0 && onDone) onDone();
+    };
     img.onerror = () => { if (--left === 0 && onDone) onDone(); };
     img.src = ICON_SRC[n] + '?v=' + ICON_VER;
   }

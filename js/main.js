@@ -3940,6 +3940,21 @@ $('btn-patrol').addEventListener('click', () => { startPatrolMode(); });
 $('btn-deploy').addEventListener('click', () => { toggleDeploySel(); });
 $('btn-reload').addEventListener('click', () => { reloadSel(); });
 
+function bootProgress(done, total) {
+  const bar = document.getElementById('boot-bar');
+  const note = document.getElementById('boot-note');
+  const pct = Math.round((done / Math.max(1, total)) * 100);
+  if (bar) bar.style.width = pct + '%';
+  if (note) note.textContent = done >= total ? '准备就绪' : '正在装载战场… ' + done + '/' + total;
+}
+
+function bootDone() {
+  const el = document.getElementById('boot');
+  if (!el) return;
+  el.classList.add('done');
+  setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 480);
+}
+
 function boot() {
   const P = params();
   // 一次性 UI 绑定。历史上这几行被误放进 setSpec()，导致每次切换特感都重复 addEventListener
@@ -3980,7 +3995,10 @@ setZVary(localStorage.getItem('dcl.zvary') !== '0');
   setShowAura(auraInit);
   const auraBtn = $('btn-aura');
   if (auraBtn) auraBtn.addEventListener('click', () => { setShowAura(!app.showAura); toast(app.showAura ? '光环显示开' : '光环显示已关（仍在回血）'); });
-  loadSprites(() => { toast('素材已加载'); });
+  loadSprites(() => {
+    // 等两帧，确保标题页/战场先画出来再撤遮罩，避免闪一帧黑
+    requestAnimationFrame(() => requestAnimationFrame(bootDone));
+  }, bootProgress);
   setState(STATE.TITLE);
   if (P.panel === 'settings' || P.panel === 'help') showTitlePanel(P.panel);
   alignMenuToEyes();

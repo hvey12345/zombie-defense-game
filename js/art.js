@@ -1,6 +1,6 @@
 // js/art.js — 只画，不改状态。零贴图，纯几何。
 import { TILE, TERRAIN, UNITS, FORTS, ZOMBIES, RULE, NODE_TYPES, GARRISON, HERO_SKILLS } from './data.js';
-import { icon, unitIcon, fortIcon, loadIcons, ICON_COLOR } from './icons.js';
+import { icon, unitIcon, fortIcon, loadIcons, ICON_TOTAL, ICON_COLOR } from './icons.js';
 import { chargeLane, stompRing, unitRank } from './game.js';
 
 const PAL = Object.freeze({
@@ -39,14 +39,21 @@ const SPRITES = {};
 
 // 帖图自身的朝向修正：素材默认朝东为 0，车头朝北的要 +90°
 
-export function loadSprites(onDone) {
-  loadIcons(null);
+export function loadSprites(onDone, onProgress) {
+  // 总量 = 图标数 + 3 张贴图，进度条按这个走
   const names = Object.keys(SPRITE_SRC);
-  let left = names.length;
+  const total = ICON_TOTAL + names.length;
+  let done = 0;
+  const tick = () => {
+    done += 1;
+    if (onProgress) onProgress(done, total);
+    if (done >= total && onDone) onDone();
+  };
+  loadIcons(tick, tick);
   for (const n of names) {
     const img = new Image();
-    img.onload = () => { SPRITES[n] = img; if (--left === 0 && onDone) onDone(); };
-    img.onerror = () => { if (--left === 0 && onDone) onDone(); };
+    img.onload = () => { SPRITES[n] = img; tick(); };
+    img.onerror = () => { tick(); };
     img.src = SPRITE_SRC[n];
   }
 }
