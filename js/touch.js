@@ -147,8 +147,15 @@ cv.addEventListener('pointerleave', (e) => {
 document.addEventListener('gesturestart', (e) => e.preventDefault(), { passive: false });
 document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: false });
 
-// 手机专用按钮列：全选同类 / 取消选中 / 架设 / 拆除
+// 手机专用按钮组：默认收起成一个 ☰，点开才展开（不再常驻压住地图）
 (function buildTools() {
+  const fab = document.createElement('button');
+  fab.id = 'mfab';
+  fab.type = 'button';
+  fab.textContent = '☰';
+  fab.setAttribute('aria-label', '更多操作');
+  document.body.appendChild(fab);
+
   const box = document.createElement('div');
   box.id = 'mtools';
   box.innerHTML = [
@@ -156,9 +163,39 @@ document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: fals
     '<button data-act="clear">取消选中</button>',
     '<button data-act="deploy">架设</button>',
     '<button data-act="demolish">拆除</button>',
-    '<button data-act="hud">精简HUD</button>',
+    '<button data-act="hud">仅战场</button>',
   ].join('');
   document.body.appendChild(box);
+
+  // 按钮文案跟着当前 HUD 档位走（默认精简档 ⇒ 下一档是「仅战场」）
+  const hudBtn = box.querySelector('button[data-act="hud"]');
+  function syncHudLabel() {
+    const lite = document.body.classList.contains('hud-lite');
+    const min = document.body.classList.contains('hud-min');
+    hudBtn.textContent = min ? '显示全部' : lite ? '仅战场' : '精简HUD';
+    hudBtn.classList.toggle('on', lite || min);
+  }
+  syncHudLabel();
+
+  function placeFab() {
+    const bb = document.getElementById('buildbar');
+    const h = bb && getComputedStyle(bb).display !== 'none' ? bb.getBoundingClientRect().height : 0;
+    fab.style.bottom = (h + 14) + 'px';
+    box.style.bottom = (h + 62) + 'px';
+  }
+  placeFab();
+
+  function close() {
+    box.classList.remove('open');
+    fab.classList.remove('open');
+    placeFab();
+  }
+  fab.addEventListener('click', () => {
+    const on = box.classList.toggle('open');
+    fab.classList.toggle('open', on);
+    placeFab();
+  });
+
   box.addEventListener('click', (e) => {
     const btn = e.target.closest('button');
     if (!btn) return;
@@ -177,16 +214,15 @@ document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: fals
       if (window.__dclSel) window.__dclSel.demolish();
       btn.classList.toggle('on');
     } else if (act === 'hud') {
-      // 0 完整 → 1 精简（去左栏/引导/战报/小地图/兑换） → 2 仅战场
       const cur = document.body.classList.contains('hud-min') ? 2
         : document.body.classList.contains('hud-lite') ? 1 : 0;
       const next = (cur + 1) % 3;
       document.body.classList.toggle('hud-lite', next === 1);
       document.body.classList.toggle('hud-min', next === 2);
-      btn.textContent = next === 0 ? '精简HUD' : next === 1 ? '仅战场' : '显示全部';
-      btn.classList.toggle('on', next !== 0);
+      syncHudLabel();
       if (window.__dclClamp) window.__dclClamp();
     }
+    close();
   });
 })();
 
