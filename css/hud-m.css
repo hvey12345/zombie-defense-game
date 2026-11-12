@@ -381,3 +381,29 @@ body.touch #buildbar #skillbar .build { min-width: 44px; }
 
 /* 浮条出来时，☰ 抬到条上方 */
 body.touch.bar-open #mfab { bottom: 108px; }
+
+/* ============ v13：右缘常驻二键（A 方案，文字 + 自动淡出） ============ */
+#mquick {
+  position: fixed; right: 6px; top: 58px;
+  display: none; flex-direction: column; gap: 8px;
+  z-index: 59;
+}
+body.touch #mquick { display: flex; }
+#mquick button {
+  width: 56px; height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(120, 190, 250, 0.28);
+  background: rgba(8, 14, 22, 0.86);
+  color: #cfe3f5;
+  font-size: 11px; line-height: 1.25;
+  letter-spacing: 0.5px;
+  display: flex; align-items: center; justify-content: center;
+  text-align: center;
+  transition: opacity .25s, background .12s, border-color .12s;
+}
+#mquick button:active { background: rgba(30, 70, 110, 0.92); border-color: rgba(150, 210, 255, 0.6); }
+#mquick button.off { opacity: 0.45; }
+#mquick.dim button:not(.off) { opacity: 0.5; }
+#mquick.dim button:active { opacity: 0.85; }
+/* 抽屉只剩两项，收窄一点 */
+body.touch #mtools { width: 96px; }

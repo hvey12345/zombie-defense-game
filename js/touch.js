@@ -159,12 +159,56 @@ document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: fals
   const box = document.createElement('div');
   box.id = 'mtools';
   box.innerHTML = [
-    '<button data-act="same">全选同类</button>',
-    '<button data-act="clear">取消选中</button>',
     '<button data-act="deploy">架设</button>',
     '<button data-act="demolish">拆除</button>',
   ].join('');
   document.body.appendChild(box);
+
+  // 常驻常用键：全选同类 / 取消选中（右缘竖排，3 秒无操作自动淡出）
+  const quick = document.createElement('div');
+  quick.id = 'mquick';
+  quick.innerHTML = [
+    '<button data-act="same">全选<br>同类</button>',
+    '<button data-act="clear">取消<br>选中</button>',
+  ].join('');
+  document.body.appendChild(quick);
+  const qSame = quick.querySelector('[data-act="same"]');
+  const qClear = quick.querySelector('[data-act="clear"]');
+
+  let dimTimer = 0;
+  function wake() {
+    quick.classList.remove('dim');
+    clearTimeout(dimTimer);
+    dimTimer = setTimeout(() => quick.classList.add('dim'), 3000);
+  }
+  wake();
+  window.addEventListener('pointerdown', wake, { passive: true });
+
+  function syncQuick() {
+    const v = window.__dclView ? window.__dclView() : null;
+    const picked = v && (v.sel > 0 || v.selCore || v.selF || v.selNode);
+    qSame.classList.toggle('off', !picked);
+    qClear.classList.toggle('off', !picked);
+  }
+  syncQuick();
+  setInterval(syncQuick, 350);
+
+  quick.addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    wake();
+    const act = btn.dataset.act;
+    if (act === 'same') {
+      const n = window.__dclSel && window.__dclSel.sameKind();
+      if (n > 0) {
+        btn.innerHTML = '已选 ' + n;
+        setTimeout(() => { btn.innerHTML = '全选<br>同类'; }, 1200);
+      }
+    } else if (act === 'clear') {
+      if (window.__dclSel) window.__dclSel.clearAll();
+    }
+    syncQuick();
+  });
 
   function placeFab() {
     const bb = document.getElementById('buildbar');
@@ -189,14 +233,7 @@ document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: fals
     const btn = e.target.closest('button');
     if (!btn) return;
     const act = btn.dataset.act;
-    if (act === 'same') {
-      const n = window.__dclSel && window.__dclSel.sameKind();
-      if (n) btn.textContent = '已选 ' + n;
-      else btn.textContent = '先选一个兵';
-      setTimeout(() => { btn.textContent = '全选同类'; }, 1200);
-    } else if (act === 'clear') {
-      if (window.__dclSel) window.__dclSel.clearAll();
-    } else if (act === 'deploy') {
+    if (act === 'deploy') {
       if (window.__dclSel) window.__dclSel.deploy();
       btn.classList.toggle('on');
     } else if (act === 'demolish') {
