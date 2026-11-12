@@ -3361,6 +3361,9 @@ cv.addEventListener('mousedown', (e) => {
 
   if (!canCommand()) return;
 
+  const run = app.run;
+  if (!run) return;
+
   if (app.skillMode) {
     if (e.button === 2) { app.skillMode = null; toast('已取消'); return; }
     castAt(p);

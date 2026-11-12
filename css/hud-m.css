@@ -133,3 +133,176 @@ body.touch #mtools { display: flex; }
 #mtools button:active { background: rgba(40, 80, 120, 0.9); }
 #mtools button.on { border-color: #7fc4ff; color: #eaf4ff; }
 #mtools button:disabled { opacity: 0.4; }
+
+
+/* ============ v2 紧凑版：为 320~420px 高的手机横屏压缩 HUD ============ */
+html, body { overflow: hidden; }
+
+/* 顶栏压到 3 行、总高 <= 88px */
+body.touch #topbar {
+  padding: 4px 6px 5px; row-gap: 2px; height: auto;
+}
+body.touch #topbar .stat { font-size: 10px; padding: 1px 4px; border-radius: 7px; }
+body.touch #topbar .stat .bar { width: 44px; height: 4px; }
+body.touch #topbar .stat .ico { width: 12px; height: 12px; }
+body.touch #topbar .lbl { display: none; }
+body.touch #topbar #hud-timer { font-size: 10px; }
+body.touch #topbar #hud-pv { display: none; }   /* 波次构成在小屏隐藏，战报里仍有 */
+body.touch #topbar .tb-right { gap: 3px; }
+body.touch #topbar .tb-right .mini { min-width: 30px; min-height: 30px; padding: 0 6px; }
+body.touch #topbar .tb-center { gap: 5px; margin-top: 1px; }
+body.touch #topbar .res { font-size: 10px; padding: 1px 5px; gap: 3px; }
+body.touch #topbar .res b { font-size: 12px; }
+body.touch #topbar .res .rate { font-size: 9px; }
+body.touch #topbar .zline { gap: 4px; }
+body.touch #topbar .zline .zlbl { font-size: 9px; }
+body.touch #topbar .zline .bar { height: 5px; }
+
+/* 底栏压到 126px，格子更小 */
+body.touch #buildbar { height: 126px; padding: 4px 6px; gap: 4px; }
+body.touch #buildbar .src-tag { flex: 0 0 112px; }
+body.touch #buildbar .src-tag .src-name { font-size: 11px; }
+body.touch #buildbar .src-tag .src-sub { font-size: 9px; }
+body.touch #buildbar .build { min-width: 52px; max-width: 62px; padding: 2px; }
+body.touch #buildbar .build img { width: 22px; height: 22px; }
+body.touch #buildbar .build b { font-size: 10px; }
+body.touch #buildbar .build i { font-size: 9px; }
+body.touch #buildbar .build em { display: none; }
+body.touch #buildbar .brow { min-height: 52px; gap: 3px; }
+body.touch #buildbar .swapcap { flex: 0 0 48px; font-size: 9px; }
+body.touch #skillbar .skill { min-width: 44px; height: 44px; }
+body.touch #minimap-wrap canvas { width: 92px; height: 64px; }
+
+/* 引导条：单行、贴底栏上沿 */
+body.touch #tut { bottom: 132px; padding: 3px 7px; font-size: 10px; gap: 5px; }
+
+/* 悬浮工具：右边缘竖排，贴底栏上方 */
+body.touch #mtools {
+  top: auto; bottom: 132px; right: 5px; width: 46px;
+  flex-direction: column; flex-wrap: nowrap; gap: 4px;
+}
+body.touch #mtools button {
+  flex: 0 0 auto; width: 46px; min-width: 0; height: 34px; min-height: 0;
+  font-size: 10px; line-height: 1.1; padding: 0; border-radius: 9px;
+}
+
+/* ============ v3：顶栏改 2 行网格，给战场让高度 ============ */
+body.touch #topbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "left right" "zline center";
+  align-items: center;
+  gap: 2px 8px;
+  padding: 4px 8px 5px;
+}
+body.touch #topbar .tb-left { grid-area: left; flex-wrap: nowrap; overflow: hidden; }
+body.touch #topbar .tb-right { grid-area: right; }
+body.touch #topbar .zline { grid-area: zline; margin: 0; }
+body.touch #topbar .tb-center { grid-area: center; margin: 0; }
+
+/* 底栏再压 18px */
+body.touch #buildbar { height: 108px; padding: 3px 5px; }
+body.touch #buildbar .brow { min-height: 46px; }
+body.touch #buildbar .build img { width: 20px; height: 20px; }
+body.touch #buildbar .build b { font-size: 9px; }
+body.touch #buildbar .build i { font-size: 8px; }
+body.touch #buildbar .src-tag { flex: 0 0 104px; padding: 2px 4px; }
+body.touch #buildbar .src-tag img { width: 22px; height: 22px; }
+body.touch #buildbar .swapcap { flex: 0 0 44px; }
+body.touch #skillbar .skill { min-width: 40px; height: 40px; }
+body.touch #buildbar .hint { font-size: 9px; }
+
+/* 跟着底栏走的悬浮件 */
+body.touch #tut { bottom: 114px; }
+body.touch #mtools { bottom: 114px; }
+body.touch #mtools button { height: 30px; font-size: 9px; }
+
+/* ============ v4：资源簇瘦身 + 底栏再收 12px ============ */
+body.touch #topbar .res { white-space: nowrap; }
+body.touch #topbar .res .rate { display: none; }          /* 收益速率在手机上省掉 */
+body.touch #topbar #res-supply .cap,
+body.touch #topbar #hud-supply-cap { font-size: 9px; }
+body.touch #topbar #res-parts .rate,
+body.touch #topbar #hud-parts-net { display: none; }
+body.touch #topbar .tb-center { flex-wrap: nowrap; min-width: 0; }
+body.touch #topbar .res b { font-size: 11px; }
+
+body.touch #buildbar { height: 96px; }
+body.touch #buildbar .swap-l2 { display: none; }          /* 批量兑换收到桌面版 */
+body.touch #buildbar .brow { min-height: 42px; }
+body.touch #buildbar .src-tag { flex: 0 0 96px; }
+body.touch #buildbar .build { min-width: 46px; max-width: 54px; }
+body.touch #buildbar .build img { width: 18px; height: 18px; }
+body.touch #buildbar .build b { font-size: 9px; }
+body.touch #buildbar .build i { display: none; }          /* 造价行省掉，长按看提示 */
+body.touch #buildbar .hint { display: none; }
+
+body.touch #tut { bottom: 102px; padding: 2px 6px; font-size: 10px; }
+body.touch #mtools { bottom: 102px; }
+body.touch #mtools button { height: 28px; font-size: 9px; }
+body.touch #minimap-wrap canvas { width: 84px; height: 58px; }
+
+/* ============ v5：波次预告在手机上隐藏（塞在计时器里会压住资源簇） ============ */
+body.touch #topbar #hud-timer em { display: none; }
+body.touch #topbar #hud-timer { font-size: 9px; padding: 1px 5px; }
+body.touch #topbar #hud-timer b { font-size: 12px; }
+body.touch #topbar #hud-timer i { font-size: 9px; }
+body.touch #topbar .zline { display: none; }               /* 威胁条移到左上角数字里的「波次」已够用 */
+body.touch #topbar .tb-center { justify-content: flex-end; }
+body.touch #topbar .res { padding: 1px 4px; }
+body.touch #topbar .res b { font-size: 11px; }
+body.touch #topbar .res i { font-size: 9px; }
+
+/* 顶栏只剩 2 行 → 总高 ~46px */
+body.touch #topbar { padding: 3px 6px 4px; row-gap: 0; gap: 1px 8px; }
+body.touch #topbar .tb-left { gap: 3px; }
+
+/* ============ v6：一键收起 HUD（小屏只看战场） ============ */
+body.touch.hud-min #topbar,
+body.touch.hud-min #buildbar,
+body.touch.hud-min #tut,
+body.touch.hud-min #battlelog,
+body.touch.hud-min #resfloats { display: none !important; }
+body.touch.hud-min #mtools { bottom: 8px; right: 5px; }
+
+/* ============ v7：进一步精简信息（只留能指导操作的） ============ */
+/* 顶栏左侧：只留图标+数值，「波次/僵尸/叛军」文字全去 */
+body.touch #topbar .stat .lbl { display: none; }
+body.touch #topbar .stat { gap: 2px; padding: 1px 4px; }
+body.touch #topbar .stat .ico { width: 12px; height: 12px; }
+body.touch #topbar #hud-core { font-size: 11px; }
+/* 单位面板副行压成一行省略号 */
+body.touch #buildbar .src-tag .sub,
+body.touch #buildbar #src-sub {
+  font-size: 9px; line-height: 1.2;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 88px;
+}
+body.touch #buildbar #src-name { font-size: 11px; }
+/* 战报只留最后一行 */
+body.touch #battlelog { max-height: 26px; overflow: hidden; font-size: 10px; }
+/* 小地图再收一档 */
+body.touch #minimap-wrap { width: 80px; }
+body.touch #minimap-wrap canvas { width: 76px; height: 52px; }
+/* 建造按钮只留图标 */
+body.touch #buildbar .build { min-width: 40px; max-width: 44px; padding: 2px; }
+body.touch #buildbar .build img { width: 16px; height: 16px; }
+body.touch #buildbar .build b { display: none; }
+
+/* ============ v8：生产格（.prod-item）也走图标模式 ============ */
+body.touch #buildbar .prod-item { min-width: 42px; max-width: 46px; padding: 3px 2px; }
+body.touch #buildbar .prod-item img { width: 20px; height: 20px; }
+body.touch #buildbar .prod-item b { font-size: 9px; line-height: 1.1; }
+body.touch #buildbar .prod-item i { display: none; }
+body.touch #buildbar .prod-item em { font-size: 8px; }
+
+/* ============ v9：精简档（只留资源条 + 生产格 + 技能） ============ */
+body.touch.hud-lite #topbar .tb-left,
+body.touch.hud-lite #tut,
+body.touch.hud-lite #battlelog,
+body.touch.hud-lite #minimap-wrap,
+body.touch.hud-lite #ui-swap,
+body.touch.hud-lite #buildbar .src-tag { display: none !important; }
+body.touch.hud-lite #topbar { padding: 2px 6px 3px; }
+body.touch.hud-lite #buildbar { height: 76px; }
+body.touch.hud-lite #mtools { bottom: 82px; }

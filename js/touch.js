@@ -156,6 +156,7 @@ document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: fals
     '<button data-act="clear">取消选中</button>',
     '<button data-act="deploy">架设</button>',
     '<button data-act="demolish">拆除</button>',
+    '<button data-act="hud">精简HUD</button>',
   ].join('');
   document.body.appendChild(box);
   box.addEventListener('click', (e) => {
@@ -175,6 +176,16 @@ document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: fals
     } else if (act === 'demolish') {
       if (window.__dclSel) window.__dclSel.demolish();
       btn.classList.toggle('on');
+    } else if (act === 'hud') {
+      // 0 完整 → 1 精简（去左栏/引导/战报/小地图/兑换） → 2 仅战场
+      const cur = document.body.classList.contains('hud-min') ? 2
+        : document.body.classList.contains('hud-lite') ? 1 : 0;
+      const next = (cur + 1) % 3;
+      document.body.classList.toggle('hud-lite', next === 1);
+      document.body.classList.toggle('hud-min', next === 2);
+      btn.textContent = next === 0 ? '精简HUD' : next === 1 ? '仅战场' : '显示全部';
+      btn.classList.toggle('on', next !== 0);
+      if (window.__dclClamp) window.__dclClamp();
     }
   });
 })();
