@@ -7,8 +7,8 @@
 <meta name="mobile-web-app-capable" content="yes" />
 <title>死城防线 · Dead City Line</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%2314181d'/%3E%3Crect x='4' y='4' width='8' height='8' fill='%23e0b341'/%3E%3C/svg%3E" />
-<link rel="stylesheet" href="css/hud.css?v=202611130049" />
-<link rel="stylesheet" href="css/hud-m.css?v=202611130049" />
+<link rel="stylesheet" href="css/hud.css?v=202611130059" />
+<link rel="stylesheet" href="css/hud-m.css?v=202611130059" />
   <meta name="description" content="俯视角城市沙盘僵尸围城布防：修工事、架火力、把尸潮引进杀伤区。" />
   <meta name="theme-color" content="#080b10" />
 
@@ -57,15 +57,15 @@
   <canvas id="cv" width="1152" height="720"></canvas>
 
   <div id="hud">
-    <img id="hud-art" class="hud-art" src="assets/portraits/art-hud.webp?v=202611130049" onerror="this.onerror=null;this.src='assets/portraits/art-hud.png'" alt="" />
+    <img id="hud-art" class="hud-art" src="assets/portraits/art-hud.webp?v=202611130059" onerror="this.onerror=null;this.src='assets/portraits/art-hud.png'" alt="" />
     <div id="topbar" class="panel hidden">
       <!-- 左段：战况（资源点 / 波次 / 僵尸 / 叛军 / 据点血条） -->
       <div class="tb-left">
-        <span class="stat compact" title="已占领的资源点（圈内有已方单位即可占领；僵尸进圈会反推）"><img class="ico" src="assets/icons/res-node.png?v=202611130049" alt="" /><b id="hud-nodes">0/4</b><i class="lbl">资源点</i></span>
-        <span class="stat keep"><img class="ico" src="assets/icons/wave.png?v=202611130049" alt="" /><b id="hud-wave">0/5</b><i class="lbl" id="lbl-wave">波次</i></span>
-        <span class="stat compact"><img class="ico" src="assets/icons/zombie.png?v=202611130049" alt="" /><b id="hud-zombies">0</b><i class="lbl">僵尸</i></span>
-        <span class="stat compact" id="hud-raiderwrap" style="display:none" title="叛军（第三方）：既打你也打僵尸"><img class="ico" src="assets/icons/infantry.png?v=202611130049" alt="" /><b id="hud-raiders">0</b><i class="lbl">叛军</i></span>
-        <span class="stat keep wide"><img class="ico" src="assets/icons/core.png?v=202611130049" alt="" /><b id="hud-core">1000</b><i>据点</i>
+        <span class="stat compact" title="已占领的资源点（圈内有已方单位即可占领；僵尸进圈会反推）"><img class="ico" src="assets/icons/res-node.png?v=202611130059" alt="" /><b id="hud-nodes">0/4</b><i class="lbl">资源点</i></span>
+        <span class="stat keep"><img class="ico" src="assets/icons/wave.png?v=202611130059" alt="" /><b id="hud-wave">0/5</b><i class="lbl" id="lbl-wave">波次</i></span>
+        <span class="stat compact"><img class="ico" src="assets/icons/zombie.png?v=202611130059" alt="" /><b id="hud-zombies">0</b><i class="lbl">僵尸</i></span>
+        <span class="stat compact" id="hud-raiderwrap" style="display:none" title="叛军（第三方）：既打你也打僵尸"><img class="ico" src="assets/icons/infantry.png?v=202611130059" alt="" /><b id="hud-raiders">0</b><i class="lbl">叛军</i></span>
+        <span class="stat keep wide"><img class="ico" src="assets/icons/core.png?v=202611130059" alt="" /><b id="hud-core">1000</b><i>据点</i>
           <span class="bar"><i id="hud-corebar" style="width:100%"></i></span>
         </span>
       </div>
@@ -78,17 +78,17 @@
       <!-- 中段：资源簇（绝对居中，大号等宽数字） -->
       <div class="tb-center">
         <span class="res" id="res-supply" title="资金：造兵与建造都花它；满上限时基地停产">
-          <img src="assets/icons/res-cash.png?v=202611130049" alt="" />
+          <img src="assets/icons/res-cash.png?v=202611130059" alt="" />
           <b id="hud-supply">600</b><s id="hud-supply-cap">/1500</s>
           <i class="rate"><span id="hud-net">+0.0</span>/s</i>
         </span>
         <span class="res" id="res-parts" title="零件：载具与炮台除资金外还要花零件">
-          <img src="assets/icons/res-part.png?v=202611130049" alt="" />
+          <img src="assets/icons/res-part.png?v=202611130059" alt="" />
           <b id="hud-parts">200</b>
           <i class="rate"><span id="hud-parts-net">+0.0</span>/s</i>
         </span>
         <span class="res" id="res-pop" title="人口：核心等级 + 兵营决定上限，超出部分按人计维护费">
-          <img src="assets/icons/res-pop.png?v=202611130049" alt="" />
+          <img src="assets/icons/res-pop.png?v=202611130059" alt="" />
           <b id="hud-pop">0</b><s id="hud-pop-cap">/20</s>
           <i class="rate">Lv<b id="hud-lv">1</b></i>
         </span>
@@ -98,9 +98,9 @@
         <span id="hud-groups" class="stat" style="display:none"></span>
         <span id="hud-timer" class="stat clickable" title="点一下立即开战"><b>90</b><i>秒后开战</i></span>
         <button id="btn-speed" class="mini" title="切换倍速（F）">×1</button>
-        <button id="btn-pause" class="mini icon" title="暂停（P / Esc）"><img src="assets/icons/pause.png?v=202611130049" alt="暂停" /></button>
-        <button id="btn-restart" class="mini icon" title="重开本局（R）"><img src="assets/icons/restart.png?v=202611130049" alt="重开" /></button>
-        <button id="btn-sound" class="mini icon" title="音效开关（M）"><img id="ico-sound" src="assets/icons/sound-on.png?v=202611130049" alt="音效" /></button>
+        <button id="btn-pause" class="mini icon" title="暂停（P / Esc）"><img src="assets/icons/pause.png?v=202611130059" alt="暂停" /></button>
+        <button id="btn-restart" class="mini icon" title="重开本局（R）"><img src="assets/icons/restart.png?v=202611130059" alt="重开" /></button>
+        <button id="btn-sound" class="mini icon" title="音效开关（M）"><img id="ico-sound" src="assets/icons/sound-on.png?v=202611130059" alt="音效" /></button>
         <button id="btn-wave" class="mini primary">立即开战</button>
       </div>
     </div>
@@ -123,23 +123,23 @@
       <div class="bmain">
         <div class="bheads">
           <span class="src-icon hidden" id="src-icon">
-            <img id="src-icon-img" src="assets/icons/infantry.png?v=202611130049" alt="" />
+            <img id="src-icon-img" src="assets/icons/infantry.png?v=202611130059" alt="" />
             <span class="src-hp"><i id="src-hpfill"></i></span>
           </span>
           <span class="src-tag"><b id="src-name">指挥据点</b><span id="src-sub">可生产：步兵 / 炮台 / 工事</span></span>
-          <button class="build tool" id="btn-select" data-kind="select"><img src="assets/icons/select.png?v=202611130049" alt="" /><b>选择</b><i>框选</i><em>V</em></button>
-          <button class="build tool" id="btn-demolish" data-kind="demolish"><img src="assets/icons/demolish.png?v=202611130049" alt="" /><b>拆除</b><i>返 50%</i><em>X</em></button>
+          <button class="build tool" id="btn-select" data-kind="select"><img src="assets/icons/select.png?v=202611130059" alt="" /><b>选择</b><i>框选</i><em>V</em></button>
+          <button class="build tool" id="btn-demolish" data-kind="demolish"><img src="assets/icons/demolish.png?v=202611130059" alt="" /><b>拆除</b><i>返 50%</i><em>X</em></button>
         </div>
         <div class="brow">
           <div class="bbody tool-list" id="tool-list">
-            <button class="build tool" id="btn-hold" data-kind="hold"><img src="assets/icons/hold.png?v=202611130049" alt="" /><b>停火</b><i>切换</i><em>C</em><span class="dot"></span></button>
-            <button class="build tool" id="btn-patrol" data-kind="patrol"><img src="assets/icons/patrol.png?v=202611130049" alt="" /><b>巡逻</b><i>两点</i><em>T</em><span class="dot"></span></button>
-            <button class="build tool" id="btn-deploy" title="架设（G）——选中机枪组 / 火炮后按 G；选中指挥官时 G 改为投手雷"><img src="assets/icons/mg.png?v=202611130049" alt="" /><b>架设</b><i>机枪组/火炮</i><em>G</em><span class="dot"></span></button>
-            <button class="build tool" id="btn-reload"><img src="assets/icons/reload.png?v=202611130049" alt="" /><b>换弹</b><i>≤50%</i><em>R</em><span class="dot"></span></button>
-            <button class="build tool hero-act" id="skill-grenade" title="手雷（G）——选中指挥官时按 G；射程 120、半径 60，对建筑 ×0.5"><img src="assets/icons/skill_grenade.png?v=202611130049" alt="" /><b>手雷</b><i>就绪</i><em>G</em></button>
-            <button class="build tool hero-act" id="skill-warcry" title="战吼（Shift+E）——周围 7 秒：伤害 +18% / 移速 +10% / 受伤 -10%"><img src="assets/icons/skill_warcry.png?v=202611130049" alt="" /><b>战吼</b><i>就绪</i><em>⇧E</em></button>
-            <button class="build tool hero-act" id="skill-grapple" title="钩爪（Shift+F）——点空地把指挥官拉过去；点敌人撞过去（22 伤）；点建筑直接入驻（跳过读条）"><img src="assets/icons/skill_grapple.png?v=202611130049" alt="" /><b>钩爪</b><i>就绪</i><em>⇧F</em></button>
-            <button class="build tool hero-act" id="skill-adrenaline" title=""肾上腺素（Shift+Q）——立即回复自身 15% 生命，并在 5 秒内移速 +20%（与其它加速取最高）"><img src="assets/icons/skill_adrenaline.png?v=202611130049" alt="" /><b>肾上腺素</b><i>就绪</i><em>⇧Q</em></button>
+            <button class="build tool" id="btn-hold" data-kind="hold"><img src="assets/icons/hold.png?v=202611130059" alt="" /><b>停火</b><i>切换</i><em>C</em><span class="dot"></span></button>
+            <button class="build tool" id="btn-patrol" data-kind="patrol"><img src="assets/icons/patrol.png?v=202611130059" alt="" /><b>巡逻</b><i>两点</i><em>T</em><span class="dot"></span></button>
+            <button class="build tool" id="btn-deploy" title="架设（G）——选中机枪组 / 火炮后按 G；选中指挥官时 G 改为投手雷"><img src="assets/icons/mg.png?v=202611130059" alt="" /><b>架设</b><i>机枪组/火炮</i><em>G</em><span class="dot"></span></button>
+            <button class="build tool" id="btn-reload"><img src="assets/icons/reload.png?v=202611130059" alt="" /><b>换弹</b><i>≤50%</i><em>R</em><span class="dot"></span></button>
+            <button class="build tool hero-act" id="skill-grenade" title="手雷（G）——选中指挥官时按 G；射程 120、半径 60，对建筑 ×0.5"><img src="assets/icons/skill_grenade.png?v=202611130059" alt="" /><b>手雷</b><i>就绪</i><em>G</em></button>
+            <button class="build tool hero-act" id="skill-warcry" title="战吼（Shift+E）——周围 7 秒：伤害 +18% / 移速 +10% / 受伤 -10%"><img src="assets/icons/skill_warcry.png?v=202611130059" alt="" /><b>战吼</b><i>就绪</i><em>⇧E</em></button>
+            <button class="build tool hero-act" id="skill-grapple" title="钩爪（Shift+F）——点空地把指挥官拉过去；点敌人撞过去（22 伤）；点建筑直接入驻（跳过读条）"><img src="assets/icons/skill_grapple.png?v=202611130059" alt="" /><b>钩爪</b><i>就绪</i><em>⇧F</em></button>
+            <button class="build tool hero-act" id="skill-adrenaline" title=""肾上腺素（Shift+Q）——立即回复自身 15% 生命，并在 5 秒内移速 +20%（与其它加速取最高）"><img src="assets/icons/skill_adrenaline.png?v=202611130059" alt="" /><b>肾上腺素</b><i>就绪</i><em>⇧Q</em></button>
           </div>
           <div class="bbody prod-list" id="prod-list"></div>
           <div class="ui-swap hidden" id="ui-swap">
@@ -159,13 +159,13 @@
       </div>
       <div id="skillbar">
             <button id="skill-strike" class="skill" title="炮击（Q）——轰炸指定区域，8 轮落弹">
-              <img src="assets/icons/skill_strike.png?v=202611130049" alt="" /><i>炮击</i>
+              <img src="assets/icons/skill_strike.png?v=202611130059" alt="" /><i>炮击</i>
             </button>
             <button id="skill-fire" class="skill" title="燃烧弹（E）——区域内烧 8 秒，减速 50%">
-              <img src="assets/icons/skill_fire.png?v=202611130049" alt="" /><i>燃烧弹</i>
+              <img src="assets/icons/skill_fire.png?v=202611130059" alt="" /><i>燃烧弹</i>
             </button>
             <button id="skill-airdrop" class="skill" title="空降兵（I）——任意空地空投 1 名步兵，占人口、计维护费">
-              <img src="assets/icons/infantry.png?v=202611130049" alt="" /><i>空降兵</i>
+              <img src="assets/icons/infantry.png?v=202611130059" alt="" /><i>空降兵</i>
             </button>
           </div>
     </div>
@@ -174,9 +174,9 @@
     </div>
 
     <div id="title" class="screen title-screen">
-      <img class="title-bg" src="assets/title/bg.jpg?v=202611130049" alt="">
+      <img class="title-bg" src="assets/title/bg.jpg?v=202611130059" alt="">
       <div class="title-shade"></div>
-      <img class="title-hero" id="title-hero" src="assets/title/hero.webp?v=202611130049" onerror="this.onerror=null;this.src='assets/title/hero.png'" alt="">
+      <img class="title-hero" id="title-hero" src="assets/title/hero.webp?v=202611130059" onerror="this.onerror=null;this.src='assets/title/hero.png'" alt="">
 
       <div class="title-col">
         <h1 class="title-name">死城防线</h1>
@@ -259,8 +259,8 @@
     </div>
 
     <div id="pausemenu" class="screen overlay hidden">
-      <img class="side-art left" src="assets/portraits/art-left.webp?v=202611130049" onerror="this.onerror=null;this.src='assets/portraits/art-left.png'" alt="">
-      <img class="side-art right" src="assets/portraits/art-right.webp?v=202611130049" onerror="this.onerror=null;this.src='assets/portraits/art-right.png'" alt="">
+      <img class="side-art left" src="assets/portraits/art-left.webp?v=202611130059" onerror="this.onerror=null;this.src='assets/portraits/art-left.png'" alt="">
+      <img class="side-art right" src="assets/portraits/art-right.webp?v=202611130059" onerror="this.onerror=null;this.src='assets/portraits/art-right.png'" alt="">
       <div class="card slim">
         <h2>已暂停</h2>
         <p class="sub">时间已冻结，随时继续。</p>
@@ -302,8 +302,8 @@
     </div>
 
     <div id="result" class="screen hidden">
-      <img class="side-art left" src="assets/portraits/art-left.webp?v=202611130049" onerror="this.onerror=null;this.src='assets/portraits/art-left.png'" alt="">
-      <img class="side-art right" src="assets/portraits/art-right.webp?v=202611130049" onerror="this.onerror=null;this.src='assets/portraits/art-right.png'" alt="">
+      <img class="side-art left" src="assets/portraits/art-left.webp?v=202611130059" onerror="this.onerror=null;this.src='assets/portraits/art-left.png'" alt="">
+      <img class="side-art right" src="assets/portraits/art-right.webp?v=202611130059" onerror="this.onerror=null;this.src='assets/portraits/art-right.png'" alt="">
       <div class="card">
         <h2 id="res-title">胜利</h2>
         <p id="res-sub" class="sub"></p>
@@ -355,8 +355,8 @@
   </div>
   <div id="fade"></div>
 <div id="rotate"><div class="rot-inner"><b>请横过来玩</b><span>这款游戏需要横屏才能看清战场</span></div></div>
-<script type="module" src="js/main.js?v=202611130049"></script>
-<script type="module" src="js/touch.js?v=202611130049"></script>
+<script type="module" src="js/main.js?v=202611130059"></script>
+<script type="module" src="js/touch.js?v=202611130059"></script>
 <div id="voice-sub" class="voice-sub"></div>
 </body>
 </html>

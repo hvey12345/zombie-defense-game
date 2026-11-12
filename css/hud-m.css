@@ -423,3 +423,39 @@ body.touch #buildbar .prod-item b {
   display: block; font-size: 8px; line-height: 1.1; margin-top: 1px;
   white-space: nowrap; overflow: hidden; max-width: 52px; text-overflow: ellipsis;
 }
+
+/* ============ v15：右缘技能按钮 + 阉割工具行 ============ */
+/* 巡逻 / 停火 不进手机版（换弹挪到右缘技能列） */
+body.touch #tool-list { display: none !important; }
+
+/* 常驻列第 3 枚：技能（点开竖列） */
+body.touch #mquick button[data-act="skill"] {
+  padding: 0; display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+body.touch #mquick button[data-act="skill"] img { width: 22px; height: 22px; }
+body.touch #mquick button[data-act="skill"] .cd {
+  position: absolute; right: 2px; bottom: 1px;
+  font-size: 9px; line-height: 1; color: #9fd4ff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+}
+/* 技能按钮不参与自动淡出 */
+body.touch #mquick.dim button[data-act="skill"] { opacity: 1; }
+
+body.touch #mskillpop {
+  position: fixed; right: 60px; top: 58px;
+  display: none; flex-direction: column; gap: 6px; z-index: 61;
+}
+body.touch #mskillpop.open { display: flex; }
+body.touch #mskillpop button {
+  position: relative; width: 46px; height: 46px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 12px; border: 1px solid rgba(120,190,250,0.30);
+  background: rgba(8,14,22,0.90); color: #cfe3f5;
+}
+body.touch #mskillpop button img { width: 24px; height: 24px; }
+body.touch #mskillpop button .cd {
+  position: absolute; right: 2px; bottom: 1px;
+  font-size: 9px; line-height: 1; color: #9fd4ff;
+}
+body.touch #mskillpop button.off { opacity: 0.42; }

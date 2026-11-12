@@ -160,7 +160,6 @@ document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: fals
   box.id = 'mtools';
   box.innerHTML = [
     '<button data-act="deploy">架设</button>',
-    '<button data-act="demolish">拆除</button>',
   ].join('');
   document.body.appendChild(box);
 
@@ -170,8 +169,21 @@ document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: fals
   quick.innerHTML = [
     '<button data-act="same">全选<br>同类</button>',
     '<button data-act="clear">取消<br>选中</button>',
+    '<button data-act="skill" aria-label="技能"><img src="assets/icons/skill_strike.png" alt=""><span class="cd"></span></button>',
   ].join('');
   document.body.appendChild(quick);
+
+  // 技能竖列（纯图标 + 角标）：炮击 / 燃烧弹 / 空降兵 / 换弹
+  const pop = document.createElement('div');
+  pop.id = 'mskillpop';
+  pop.innerHTML = [
+    ['strike', 'assets/icons/skill_strike.png'],
+    ['fire', 'assets/icons/skill_fire.png'],
+    ['airdrop', 'assets/icons/skill_airdrop.png'],
+    ['reload', 'assets/icons/reload.png'],
+  ].map(([id, ico]) => '<button data-id="' + id + '"><img src="' + ico + '" alt=""><span class="cd"></span></button>').join('');
+  document.body.appendChild(pop);
+  const qSkill = quick.querySelector('[data-act="skill"]');
   const qSame = quick.querySelector('[data-act="same"]');
   const qClear = quick.querySelector('[data-act="clear"]');
 
@@ -182,7 +194,10 @@ document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: fals
     dimTimer = setTimeout(() => quick.classList.add('dim'), 3000);
   }
   wake();
-  window.addEventListener('pointerdown', wake, { passive: true });
+  window.addEventListener('pointerdown', (ev) => {
+    wake();
+    if (!pop.contains(ev.target) && !qSkill.contains(ev.target)) pop.classList.remove('open');
+  }, { passive: true });
 
   function syncQuick() {
     const v = window.__dclView ? window.__dclView() : null;
@@ -192,6 +207,55 @@ document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: fals
   }
   syncQuick();
   setInterval(syncQuick, 350);
+
+  // 冷却/可用性：直接镜像原按钮（原技能按钮在冷却时把文字改成「12s」）
+  const SK = ['strike', 'fire', 'airdrop'];
+  function syncSkills() {
+    let ready = 0;
+    for (const id of SK) {
+      const src = document.getElementById('skill-' + id);
+      const btn = pop.querySelector('[data-id="' + id + '"]');
+      if (!src || !btn) continue;
+      const cooling = src.classList.contains('cooling');
+      const poor = src.classList.contains('poor');
+      const lab = src.querySelector('i');
+      const txt = cooling && lab ? lab.textContent.trim() : '';
+      if (!cooling && !poor) ready += 1;
+      const b1 = btn.querySelector('.cd');
+      if (b1) b1.textContent = txt;
+      btn.classList.toggle('off', cooling || poor);
+    }
+    // 换弹：跟着原按钮的可点状态
+    const rSrc = document.getElementById('btn-reload');
+    const rDst = pop.querySelector('[data-id="reload"]');
+    if (rSrc && rDst) {
+      const off = rSrc.classList.contains('na') || rSrc.classList.contains('locked') || rSrc.disabled;
+      rDst.classList.toggle('off', off);
+    }
+    const badge = qSkill.querySelector('.cd');
+    if (badge) badge.textContent = ready > 0 ? String(ready) : '';
+    qSkill.classList.toggle('off', ready === 0);
+  }
+  syncSkills();
+  setInterval(syncSkills, 350);
+
+  qSkill.addEventListener('click', (e) => {
+    e.stopPropagation();
+    pop.classList.toggle('open');
+  });
+  pop.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-id]');
+    if (!btn) return;
+    const id = btn.dataset.id;
+    if (id === 'reload') {
+      const rb = document.getElementById('btn-reload');
+      if (rb) rb.click();
+    } else {
+      const src = document.getElementById('skill-' + id);
+      if (src) src.click();
+    }
+    pop.classList.remove('open');
+  });
 
   quick.addEventListener('click', (e) => {
     const btn = e.target.closest('button');
