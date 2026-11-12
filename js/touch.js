@@ -163,19 +163,8 @@ document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: fals
     '<button data-act="clear">取消选中</button>',
     '<button data-act="deploy">架设</button>',
     '<button data-act="demolish">拆除</button>',
-    '<button data-act="hud">仅战场</button>',
   ].join('');
   document.body.appendChild(box);
-
-  // 按钮文案跟着当前 HUD 档位走（默认精简档 ⇒ 下一档是「仅战场」）
-  const hudBtn = box.querySelector('button[data-act="hud"]');
-  function syncHudLabel() {
-    const lite = document.body.classList.contains('hud-lite');
-    const min = document.body.classList.contains('hud-min');
-    hudBtn.textContent = min ? '显示全部' : lite ? '仅战场' : '精简HUD';
-    hudBtn.classList.toggle('on', lite || min);
-  }
-  syncHudLabel();
 
   function placeFab() {
     const bb = document.getElementById('buildbar');
@@ -213,17 +202,29 @@ document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: fals
     } else if (act === 'demolish') {
       if (window.__dclSel) window.__dclSel.demolish();
       btn.classList.toggle('on');
-    } else if (act === 'hud') {
-      const cur = document.body.classList.contains('hud-min') ? 2
-        : document.body.classList.contains('hud-lite') ? 1 : 0;
-      const next = (cur + 1) % 3;
-      document.body.classList.toggle('hud-lite', next === 1);
-      document.body.classList.toggle('hud-min', next === 2);
-      syncHudLabel();
-      if (window.__dclClamp) window.__dclClamp();
     }
     close();
   });
+})();
+
+// 按需浮出操作条：有可生产项 / 有可用指令时才出现，选中被清空就收起
+(function barGate() {
+  const bb = document.getElementById('buildbar');
+  if (!bb) return;
+  let last = null;
+  setInterval(() => {
+    const prod = bb.querySelectorAll('#prod-list .prod-item').length;
+    const tools = bb.querySelectorAll('#tool-list .build:not(.na):not(.locked)').length;
+    const v = window.__dclView ? window.__dclView() : null;
+    const picked = !!v && (v.sel > 0 || v.selCore || !!v.selF || !!v.selNode);
+    const want = picked && (prod > 0 || tools > 0);
+    if (want === last) return;
+    last = want;
+    bb.classList.toggle('bar-open', want);
+    document.body.classList.toggle('bar-open', want);
+    const fab = document.getElementById('mfab');
+    if (fab) fab.style.bottom = (want ? 108 : 78) + 'px';
+  }, 350);
 })();
 
 // 画布铺满视口：改 backing store，宽高比跟设备一致，避免信箱黑边与拉伸

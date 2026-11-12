@@ -4012,6 +4012,8 @@ window.__dclClamp = () => clampCam();
 window.__dclView = () => ({
   zoom: app.zoom, camX: app.cam.x, camY: app.cam.y,
   state: app.state, sel: app.sel.size, tool: app.tool && app.tool.kind,
+  selCore: !!app.selCore, selF: app.selF || null, selNode: app.selNode || null,
+  selRaid: app.selRaid || null, srcId: app.srcId || null,
 });
 
 function boot() {

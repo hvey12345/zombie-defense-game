@@ -345,3 +345,39 @@ body.touch.hud-lite #topbar .tb-right { order: 2; flex: 0 0 auto; }
 body.touch.hud-lite #topbar .res { padding: 0 3px; }
 body.touch.hud-lite #topbar .stat { font-size: 9px; }
 body.touch.hud-lite #topbar .res b { font-size: 11px; }
+
+/* ============ v12（A 方案）：底栏改成按需浮出的操作条 ============ */
+body.touch #buildbar {
+  left: 6px; right: 6px; bottom: 6px; width: auto;
+  height: auto; min-height: 0;
+  display: none;                 /* 默认不占屏幕 */
+  flex-direction: column; gap: 3px;
+  padding: 4px 6px;
+  border-radius: 12px;
+  background: rgba(8, 14, 22, 0.94);
+  border: 1px solid rgba(120, 190, 250, 0.22);
+  z-index: 58;
+}
+body.touch #buildbar.bar-open { display: flex; }
+
+/* 条里不放的东西：单位头像块、拆除、兑换、战报、小地图 */
+body.touch #buildbar .src-tag,
+body.touch #buildbar #btn-demolish,
+body.touch #buildbar #ui-swap,
+body.touch #buildbar #battlelog,
+body.touch #buildbar #minimap-wrap { display: none !important; }
+
+body.touch #buildbar .brow { min-height: 34px; gap: 4px; align-items: center; }
+body.touch #buildbar .build,
+body.touch #buildbar .prod-item { min-width: 40px; max-width: 44px; padding: 2px; }
+body.touch #buildbar .build img,
+body.touch #buildbar .prod-item img { width: 18px; height: 18px; }
+body.touch #buildbar .build b,
+body.touch #buildbar .prod-item b { display: none; }
+body.touch #buildbar .build i,
+body.touch #buildbar .prod-item i { display: none; }
+body.touch #buildbar #skillbar { position: static; margin-left: auto; display: flex; gap: 4px; }
+body.touch #buildbar #skillbar .build { min-width: 44px; }
+
+/* 浮条出来时，☰ 抬到条上方 */
+body.touch.bar-open #mfab { bottom: 108px; }
