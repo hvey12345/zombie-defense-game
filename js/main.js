@@ -41,6 +41,10 @@ const ctx = cv.getContext('2d');
 const sfx = new Sfx();
 window.__dclSfx = sfx;   // 调试用：在控制台查音频状态
 
+// 手机版由 m.html 打上 .touch；桌面 index.html 不带，行为完全不变
+export const TOUCH = typeof document !== "undefined"
+  && document.body.classList.contains("touch");
+
 const app = {
   state: STATE.TITLE,
   map: makeMap('city17'),
@@ -2814,7 +2818,7 @@ function updateCamera(dt) {
   if (app.keys.has('arrowup') || app.keys.has('w')) dy -= sp;
   if (app.keys.has('arrowdown') || app.keys.has('s')) dy += sp;
   // 鼠标贴边：判真屏幕边缘（HUD 压在画布上时同样生效），但压在按钮/卡片上不算
-  if (app.edgeScroll !== false && app.mouse.inside && !app.box) {
+  if (!TOUCH && app.edgeScroll !== false && app.mouse.inside && !app.box) {
     const ESP = 1100 * dt;
     const edge = 40;
     const W = window.innerWidth, H = window.innerHeight;
@@ -3283,6 +3287,31 @@ function coreHit(x, y) {
   return Math.hypot(cx - x, cy - y) <= T * 0.85;
 }
 
+// 手机版选择桥：全选同类 / 取消选中（桌面版也有按钮入口）
+function sameKindSelect() {
+  const run = app.run;
+  if (!run || !app.sel.size) return 0;
+  const nums = {};
+  for (const id of app.sel) {
+    const u = run.units.find((x) => x.id === id);
+    if (u) nums[u.kind] = (nums[u.kind] || 0) + 1;
+  }
+  let kind = null, best = 0;
+  for (const k in nums) if (nums[k] > best) { best = nums[k]; kind = k; }
+  if (!kind) return 0;
+  app.sel.clear();
+  clearPick();
+  for (const u of run.units) if (u.kind === kind && !u.inside) app.sel.add(u.id);
+  refreshHud(true);
+  return app.sel.size;
+}
+
+function clearAllSelect() {
+  app.sel.clear();
+  clearPick();
+  refreshHud(true);
+}
+
 function clearPick() {
   app.selZ = null; app.selF = null; app.selNode = null; app.selCore = false;
   app.selTile = null;   // 选中实体时，上一次的地块选择要让位
@@ -3568,6 +3597,7 @@ const HOTKEYS = ['1', '2', '3', '4', '5', '6', '7'];
 window.addEventListener('keyup', (e) => { app.keys.delete(e.key.toLowerCase()); });
 
 window.addEventListener('keydown', (e) => {
+  if (TOUCH) return;   // 手机版没有键盘
   if (e.target && /input|textarea|select/i.test(e.target.tagName)) return;
   const k = e.key.toLowerCase();
   // 方向键：按住移动视角
@@ -3954,6 +3984,32 @@ function bootDone() {
   el.classList.add('done');
   setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 480);
 }
+
+// 触屏桥：touch.js 复用同一套点击逻辑，不重写一遍
+window.__dclSel = { sameKind: sameKindSelect, clearAll: clearAllSelect, deploy: toggleDeploySel, demolish: requestDemolish };
+window.__dclHit = {
+  unitAt, fortAt, coreHit, nodeAt, raiderAt, zombieAt, occupantAt,
+  tileFromEvent, posFromEvent,
+};
+window.__dclPan = (dx, dy) => { app.cam.x += dx; app.cam.y += dy; clampCam(); };
+window.__dclZoom = (z, ax, ay) => {
+  const old = app.zoom || 1;
+  const nz = Math.min(2.2, Math.max(1.0, z));
+  if (Math.abs(nz - old) < 0.001) return old;
+  // 以画布坐标 (ax, ay) 为锚点缩放
+  const wx = ax / old + app.cam.x;
+  const wy = ay / old + app.cam.y;
+  app.zoom = nz;
+  app.cam.x = wx - ax / nz;
+  app.cam.y = wy - ay / nz;
+  clampCam();
+  return nz;
+};
+window.__dclClamp = () => clampCam();
+window.__dclView = () => ({
+  zoom: app.zoom, camX: app.cam.x, camY: app.cam.y,
+  state: app.state, sel: app.sel.size, tool: app.tool && app.tool.kind,
+});
 
 function boot() {
   const P = params();

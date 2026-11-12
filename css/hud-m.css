@@ -1,0 +1,135 @@
+/* 手机版覆盖层：m.html 专用。桌面 index.html 不加载。 */
+
+/* ---------- 横竖屏提示 ---------- */
+#rotate {
+  position: fixed; inset: 0; z-index: 10000;
+  display: none; align-items: center; justify-content: center;
+  background: #080b10; color: #dbe7f3; text-align: center;
+}
+#rotate.show { display: flex; }
+#rotate .rot-inner b {
+  display: block; font-size: 22px; letter-spacing: 6px; color: #eaf2fb;
+}
+#rotate .rot-inner span {
+  display: block; margin-top: 10px; font-size: 13px; color: #7d8fa4;
+}
+
+/* ---------- 触屏通用：更大的点击区 ---------- */
+body.touch { touch-action: none; -webkit-user-select: none; user-select: none; }
+body.touch #cv { touch-action: none; }
+
+/* 手机上没有 16:10 的信箱，直接铺满视口（画布尺寸由 js/touch.js fitCanvas 改 backing store） */
+body.touch #app {
+  width: 100vw; height: 100vh;
+  box-shadow: none;
+}
+
+/* 桌面版的键盘提示、鼠标说明全部隐藏 */
+body.touch .kbd,
+body.touch #tut .tut-hint,
+body.touch #hinttab { display: none !important; }
+
+/* ---------- 顶栏：三行（左·右 / 资源簇 / 威胁条），互不重叠 ---------- */
+body.touch #topbar {
+  left: 6px; right: 6px; top: 6px;
+  height: auto;
+  padding: 5px 8px 6px;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  row-gap: 3px;
+}
+body.touch #topbar .tb-left { flex: 1 1 auto; gap: 8px; order: 1; flex-wrap: nowrap; }
+body.touch #topbar .tb-right { flex: 0 0 auto; gap: 5px; order: 2; margin-left: auto; }
+body.touch #topbar .tb-center {
+  position: static; transform: none; left: auto; top: auto;
+  flex: 1 1 100%; order: 3; justify-content: center;
+  margin-top: 3px;
+}
+body.touch #topbar .zline { flex: 1 1 100%; order: 4; margin-top: 2px; }
+body.touch #topbar .zline .bar { max-width: none; flex: 1 1 auto; }
+body.touch #topbar .stat { font-size: 11px; gap: 4px; }
+body.touch #topbar .stat .bar { width: 64px; }
+body.touch #topbar .stat.compact .lbl { display: none; }
+body.touch #topbar .stat #hud-zombies,
+body.touch #topbar .stat #hud-core { font-size: 12px; }
+
+/* 触屏按钮统一 44px 触控区 */
+body.touch #topbar button,
+body.touch .tb-btn,
+body.touch .build {
+  min-width: 44px; min-height: 44px;
+}
+
+/* ---------- 底栏：横向滚动 + 两段 ---------- */
+body.touch #buildbar {
+  left: 6px; right: 6px; bottom: 6px;
+  width: auto;
+  height: 150px;
+  padding: 6px 8px;
+}
+body.touch #buildbar .bmain { min-width: 0; overflow: hidden; }
+body.touch #buildbar .brow {
+  overflow-x: auto; overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  height: auto; min-height: 64px;
+  padding-bottom: 2px;
+  flex-wrap: nowrap;
+}
+body.touch #buildbar .brow::-webkit-scrollbar { height: 0; }
+body.touch #buildbar .build {
+  flex: 0 0 auto;
+  min-width: 62px;
+  max-width: 76px;
+}
+body.touch #buildbar .build b { font-size: 11px; line-height: 1.15; }
+body.touch #buildbar .build i { font-size: 10px; line-height: 1.15; }
+body.touch #buildbar .src-tag { flex: 0 0 132px; }
+body.touch #buildbar .src-tag b { font-size: 12px; }
+body.touch #buildbar .swapcap { flex: 0 0 56px; }
+
+/* 小地图缩小，免得抢走战场 */
+body.touch #minimap-wrap { width: 104px; height: 74px; }
+body.touch #minimap-wrap canvas { width: 100px; height: 70px; }
+
+/* 技能条更紧凑 */
+body.touch #skillbar { gap: 4px; }
+body.touch #skillbar .skill { min-width: 46px; min-height: 46px; }
+
+/* ---------- 新手引导横条：上移，单行不折行 ---------- */
+body.touch #tut {
+  left: 6px; right: 6px; bottom: 164px;
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 8px;
+  font-size: 11px;
+  white-space: nowrap; overflow: hidden;
+}
+body.touch #tut .tut-step { overflow: hidden; text-overflow: ellipsis; flex: 1 1 auto; }
+body.touch #tut .tut-bar { flex: 0 0 42px; height: 2px; }
+
+/* ---------- 战报日志：手机上默认收起，只留最近两条 ---------- */
+body.touch #battlelog { max-height: 92px; font-size: 11px; }
+
+/* ---------- 手机专用悬浮按钮（全选同类 / 取消 / 架设 / 拆除） ---------- */
+#mtools {
+  position: fixed; right: 8px; top: 100px;
+  width: 126px;
+  display: none; flex-wrap: wrap; gap: 6px;
+  z-index: 60;
+}
+#mtools button { flex: 1 1 56px; }
+body.touch #mtools { display: flex; }
+#mtools button {
+  min-width: 56px; min-height: 40px;
+  padding: 0 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(120, 190, 250, 0.35);
+  background: rgba(10, 18, 28, 0.86);
+  color: #cfe3f5;
+  font-size: 11px;
+  line-height: 1.2;
+  letter-spacing: 1px;
+}
+#mtools button:active { background: rgba(40, 80, 120, 0.9); }
+#mtools button.on { border-color: #7fc4ff; color: #eaf4ff; }
+#mtools button:disabled { opacity: 0.4; }

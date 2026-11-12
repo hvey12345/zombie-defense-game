@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<title>死城防线 · Dead City Line</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%2314181d'/%3E%3Crect x='4' y='4' width='8' height='8' fill='%23e0b341'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="css/hud.css?v=202611122308" />
+<link rel="stylesheet" href="css/hud-m.css?v=202611122308" />
+  <meta name="description" content="俯视角城市沙盘僵尸围城布防：修工事、架火力、把尸潮引进杀伤区。" />
+  <meta name="theme-color" content="#080b10" />
+
+  <!-- 分享卡（微信 / QQ / Twitter / Discord 链预览） -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="死城防线" />
+  <meta property="og:title" content="死城防线 · Dead City Line" />
+  <meta property="og:description" content="俯视角城市沙盘僵尸围城布防：修工事、架火力、把尸潮引进杀伤区。" />
+  <meta property="og:url" content="https://hvey12345.github.io/zombie-defense-game/" />
+  <meta property="og:image" content="https://hvey12345.github.io/zombie-defense-game/assets/share-card.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:type" content="image/jpeg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="死城防线 · Dead City Line" />
+  <meta name="twitter:description" content="俯视角城市沙盘僵尸围城布防：修工事、架火力、把尸潮引进杀伤区。" />
+  <meta name="twitter:image" content="https://hvey12345.github.io/zombie-defense-game/assets/share-card.jpg" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "VideoGame",
+    "name": "死城防线",
+    "alternateName": "Dead City Line",
+    "description": "俯视角城市沙盘僵尸围城布防：修工事、架火力、把尸潮引进杀伤区。",
+    "genre": ["Strategy", "Tower Defense"],
+    "gamePlatform": "Web browser",
+    "playMode": "SinglePlayer",
+    "image": "https://hvey12345.github.io/zombie-defense-game/assets/share-card.jpg",
+    "url": "https://hvey12345.github.io/zombie-defense-game/",
+    "inLanguage": "zh-CN"
+  }
+  </script>
+</head>
+<body class="touch">
+<div id="boot" class="boot">
+  <div class="boot-inner">
+    <div class="boot-title">死城防线</div>
+    <div class="boot-sub">Dead City Line</div>
+    <div class="boot-track"><i id="boot-bar"></i></div>
+    <div class="boot-note" id="boot-note">正在装载战场…</div>
+  </div>
+</div>
+
+<div id="app">
+  <canvas id="cv" width="1152" height="720"></canvas>
+
+  <div id="hud">
+    <img id="hud-art" class="hud-art" src="assets/portraits/art-hud.webp?v=202611122308" onerror="this.onerror=null;this.src='assets/portraits/art-hud.png'" alt="" />
+    <div id="topbar" class="panel hidden">
+      <!-- 左段：战况（资源点 / 波次 / 僵尸 / 叛军 / 据点血条） -->
+      <div class="tb-left">
+        <span class="stat compact" title="已占领的资源点（圈内有已方单位即可占领；僵尸进圈会反推）"><img class="ico" src="assets/icons/res-node.png?v=202611122308" alt="" /><b id="hud-nodes">0/4</b><i class="lbl">资源点</i></span>
+        <span class="stat keep"><img class="ico" src="assets/icons/wave.png?v=202611122308" alt="" /><b id="hud-wave">0/5</b><i class="lbl" id="lbl-wave">波次</i></span>
+        <span class="stat compact"><img class="ico" src="assets/icons/zombie.png?v=202611122308" alt="" /><b id="hud-zombies">0</b><i class="lbl">僵尸</i></span>
+        <span class="stat compact" id="hud-raiderwrap" style="display:none" title="叛军（第三方）：既打你也打僵尸"><img class="ico" src="assets/icons/infantry.png?v=202611122308" alt="" /><b id="hud-raiders">0</b><i class="lbl">叛军</i></span>
+        <span class="stat keep wide"><img class="ico" src="assets/icons/core.png?v=202611122308" alt="" /><b id="hud-core">1000</b><i>据点</i>
+          <span class="bar"><i id="hud-corebar" style="width:100%"></i></span>
+        </span>
+      </div>
+      <!-- 第二行：僵尸力量（本波剩余血量 / 本波总血量，只减不增） -->
+      <div class="zline" title="僵尸力量：本波剩余血量 / 本波总血量（只减不增）">
+        <span class="zlbl">威胁</span>
+        <span class="bar zbar"><i id="hud-zbar" style="width:0%"></i></span>
+        <b id="hud-zpct">0%</b>
+      </div>
+      <!-- 中段：资源簇（绝对居中，大号等宽数字） -->
+      <div class="tb-center">
+        <span class="res" id="res-supply" title="资金：造兵与建造都花它；满上限时基地停产">
+          <img src="assets/icons/res-cash.png?v=202611122308" alt="" />
+          <b id="hud-supply">600</b><s id="hud-supply-cap">/1500</s>
+          <i class="rate"><span id="hud-net">+0.0</span>/s</i>
+        </span>
+        <span class="res" id="res-parts" title="零件：载具与炮台除资金外还要花零件">
+          <img src="assets/icons/res-part.png?v=202611122308" alt="" />
+          <b id="hud-parts">200</b>
+          <i class="rate"><span id="hud-parts-net">+0.0</span>/s</i>
+        </span>
+        <span class="res" id="res-pop" title="人口：核心等级 + 兵营决定上限，超出部分按人计维护费">
+          <img src="assets/icons/res-pop.png?v=202611122308" alt="" />
+          <b id="hud-pop">0</b><s id="hud-pop-cap">/20</s>
+          <i class="rate">Lv<b id="hud-lv">1</b></i>
+        </span>
+      </div>
+      <!-- 右段：编队 / 倒计时 / 操作 -->
+      <div class="tb-right">
+        <span id="hud-groups" class="stat" style="display:none"></span>
+        <span id="hud-timer" class="stat clickable" title="点一下立即开战"><b>90</b><i>秒后开战</i></span>
+        <button id="btn-speed" class="mini" title="切换倍速（F）">×1</button>
+        <button id="btn-pause" class="mini icon" title="暂停（P / Esc）"><img src="assets/icons/pause.png?v=202611122308" alt="暂停" /></button>
+        <button id="btn-restart" class="mini icon" title="重开本局（R）"><img src="assets/icons/restart.png?v=202611122308" alt="重开" /></button>
+        <button id="btn-sound" class="mini icon" title="音效开关（M）"><img id="ico-sound" src="assets/icons/sound-on.png?v=202611122308" alt="音效" /></button>
+        <button id="btn-wave" class="mini primary">立即开战</button>
+      </div>
+    </div>
+
+    <div id="resfloats"></div>
+
+    <div id="tut" class="hidden">
+      <i class="tut-bar" id="tut-bar"></i>
+      <div class="tut-step" id="tut-idx">1/3</div>
+      <p class="tut-text" id="tut-text"></p>
+      <div class="tut-acts">
+        <button class="mini" id="tut-next">下一步</button>
+        <button class="mini ghost" id="tut-skip">跳过</button>
+      </div>
+    </div>
+<div id="buildbar" class="panel hidden">
+      <div id="minimap-wrap" class="mm-side hidden">
+        <canvas id="minimap" width="170" height="110"></canvas>
+      </div>
+      <div class="bmain">
+        <div class="bheads">
+          <span class="src-icon hidden" id="src-icon">
+            <img id="src-icon-img" src="assets/icons/infantry.png?v=202611122308" alt="" />
+            <span class="src-hp"><i id="src-hpfill"></i></span>
+          </span>
+          <span class="src-tag"><b id="src-name">指挥据点</b><span id="src-sub">可生产：步兵 / 炮台 / 工事</span></span>
+          <button class="build tool" id="btn-select" data-kind="select"><img src="assets/icons/select.png?v=202611122308" alt="" /><b>选择</b><i>框选</i><em>V</em></button>
+          <button class="build tool" id="btn-demolish" data-kind="demolish"><img src="assets/icons/demolish.png?v=202611122308" alt="" /><b>拆除</b><i>返 50%</i><em>X</em></button>
+        </div>
+        <div class="brow">
+          <div class="bbody tool-list" id="tool-list">
+            <button class="build tool" id="btn-hold" data-kind="hold"><img src="assets/icons/hold.png?v=202611122308" alt="" /><b>停火</b><i>切换</i><em>C</em><span class="dot"></span></button>
+            <button class="build tool" id="btn-patrol" data-kind="patrol"><img src="assets/icons/patrol.png?v=202611122308" alt="" /><b>巡逻</b><i>两点</i><em>T</em><span class="dot"></span></button>
+            <button class="build tool" id="btn-deploy" title="架设（G）——选中机枪组 / 火炮后按 G；选中指挥官时 G 改为投手雷"><img src="assets/icons/mg.png?v=202611122308" alt="" /><b>架设</b><i>机枪组/火炮</i><em>G</em><span class="dot"></span></button>
+            <button class="build tool" id="btn-reload"><img src="assets/icons/reload.png?v=202611122308" alt="" /><b>换弹</b><i>≤50%</i><em>R</em><span class="dot"></span></button>
+            <button class="build tool hero-act" id="skill-grenade" title="手雷（G）——选中指挥官时按 G；射程 120、半径 60，对建筑 ×0.5"><img src="assets/icons/skill_grenade.png?v=202611122308" alt="" /><b>手雷</b><i>就绪</i><em>G</em></button>
+            <button class="build tool hero-act" id="skill-warcry" title="战吼（Shift+E）——周围 7 秒：伤害 +18% / 移速 +10% / 受伤 -10%"><img src="assets/icons/skill_warcry.png?v=202611122308" alt="" /><b>战吼</b><i>就绪</i><em>⇧E</em></button>
+            <button class="build tool hero-act" id="skill-grapple" title="钩爪（Shift+F）——点空地把指挥官拉过去；点敌人撞过去（22 伤）；点建筑直接入驻（跳过读条）"><img src="assets/icons/skill_grapple.png?v=202611122308" alt="" /><b>钩爪</b><i>就绪</i><em>⇧F</em></button>
+            <button class="build tool hero-act" id="skill-adrenaline" title=""肾上腺素（Shift+Q）——立即回复自身 15% 生命，并在 5 秒内移速 +20%（与其它加速取最高）"><img src="assets/icons/skill_adrenaline.png?v=202611122308" alt="" /><b>肾上腺素</b><i>就绪</i><em>⇧Q</em></button>
+          </div>
+          <div class="bbody prod-list" id="prod-list"></div>
+          <div class="ui-swap hidden" id="ui-swap">
+            <div class="swap-l1">
+              <button id="swap-buy" class="swapbtn"><b id="swap-buy-cost">20</b> 资金 → 1 零件</button>
+              <button id="swap-sell" class="swapbtn">1 零件 → <b id="swap-sell-gain">2</b> 资金</button>
+              <div class="swapcap" id="swap-cap"></div>
+            </div>
+            <div class="swap-l2">
+              <button id="swap-buy10" class="swapbtn swapbtn-sm"><b id="swap-buy10-cost">200</b> 资金 → 10 零件</button>
+              <button id="swap-sell10" class="swapbtn swapbtn-sm">10 零件 → <b id="swap-sell10-gain">20</b> 资金</button>
+            </div>
+          </div>
+          <div id="battlelog" class="hidden"></div>
+        </div>
+        <span id="hint" class="hint"><b>Tab</b> 切源 · <b>1~9</b> 选第 n 项 · <b>V</b> 框选 · <b>X</b> 拆除</span>
+      </div>
+      <div id="skillbar">
+            <button id="skill-strike" class="skill" title="炮击（Q）——轰炸指定区域，8 轮落弹">
+              <img src="assets/icons/skill_strike.png?v=202611122308" alt="" /><i>炮击</i>
+            </button>
+            <button id="skill-fire" class="skill" title="燃烧弹（E）——区域内烧 8 秒，减速 50%">
+              <img src="assets/icons/skill_fire.png?v=202611122308" alt="" /><i>燃烧弹</i>
+            </button>
+            <button id="skill-airdrop" class="skill" title="空降兵（I）——任意空地空投 1 名步兵，占人口、计维护费">
+              <img src="assets/icons/infantry.png?v=202611122308" alt="" /><i>空降兵</i>
+            </button>
+          </div>
+    </div>
+
+    
+    </div>
+
+    <div id="title" class="screen title-screen">
+      <img class="title-bg" src="assets/title/bg.jpg?v=202611122308" alt="">
+      <div class="title-shade"></div>
+      <img class="title-hero" id="title-hero" src="assets/title/hero.webp?v=202611122308" onerror="this.onerror=null;this.src='assets/title/hero.png'" alt="">
+
+      <div class="title-col">
+        <h1 class="title-name">死城防线</h1>
+        <p class="title-en">Dead City Line</p>
+        <nav class="title-menu">
+          <button class="menu-item active" id="btn-play">
+            <span class="mi-label">开始游戏</span>
+            <span class="mi-note" id="play-note">city-17 · 标准 · 叛军开</span>
+          </button>
+          <button class="menu-item" id="btn-settings"><span class="mi-label">设置</span></button>
+          <button class="menu-item" id="btn-help"><span class="mi-label">帮助</span></button>
+          <button class="menu-item" id="btn-quit"><span class="mi-label">退出</span></button>
+        </nav>
+      </div>
+
+      <p class="title-ver" id="build-ver">版本加载中…</p>
+
+      <div class="title-panel hidden" id="panel-settings">
+        <div class="panel-box">
+          <h2>设置</h2>
+          <p class="panel-hint">选好地图与难度再开一局；点「完成」回主菜单。</p>
+          <div class="maprow">
+            <span class="maplabel">地图</span>
+            <button class="mapbtn active" data-map="city17" data-desc="city-17：密集街区 + 4 条主干道；开局资金 600，远端资源点被叛军（红色）占据，第 5 波增援、第 8 波扑核心">city-17</button>
+            <button class="mapbtn" data-map="forest" data-desc="黑松林：一条大河把林子劈成两半，三座独木桥是唯一通道；树可砍出射界，河面不可通行。开局资金 1100，波次带主题（群袭 / 重甲 / 特感 / 疾行）循环">黑松林</button>
+            <button class="mapbtn" data-map="oldtown" data-desc="Rust Block：锈锁街区，碎地块铺满街道，楼与楼之间只有窄巷；一条斜街切过城区，适合巷战与封路。5 个出口、最近 22 格 ⇒ 波次强度按 70% 计，特感最高到「标准」；三张图里最难的一张">Rust Block</button>
+          </div>
+          <p id="map-desc" class="mapdesc"></p>
+          <div class="maprow">
+            <span class="maplabel">难度</span>
+            <button class="mapbtn" data-spec="0" data-desc="只有行尸与壮尸">关闭</button>
+            <button class="mapbtn" data-spec="1" data-desc="第 2 波起每波 1~3 只，第 5 波带 1 只巨兽">标准</button>
+            <button class="mapbtn" data-spec="2" data-desc="首波就有，第 5 波双巨兽">狂暴</button>
+          </div>
+          <p id="spec-desc" class="mapdesc"></p>
+          <div class="maprow">
+            <span class="maplabel">叛军</span>
+            <button class="mapbtn" id="btn-raider-off" data-raider="0">关闭</button>
+            <button class="mapbtn" id="btn-raider-on" data-raider="1">开启</button>
+          </div>
+          <p id="raider-desc" class="mapdesc">第三方军阀残部：占 1 个远端资源点，第 5 波增援，第 8 波直扑核心，也会挨僵尸的打</p>
+          <div class="maprow">
+            <span class="maplabel">模式</span>
+            <button class="mapbtn active" id="btn-mode-normal" data-mode="normal" data-desc="8 波定局：守住第 8 波清空即胜利">标准</button>
+            <button class="mapbtn" id="btn-mode-endless" data-mode="endless" data-desc="波次无上限：8 波后每波 +6%，每 5 波一个 Boss 波；每 3 波核心回 6% 血、每 5 波补一笔资金。没有胜利，只有坚持到第几波">无尽</button>
+          </div>
+          <p id="mode-desc" class="mapdesc">8 波定局：守住第 8 波清空即胜利</p>
+          <div class="panel-foot"><button id="btn-settings-done" class="panel-close">完成</button></div>
+        </div>
+      </div>
+
+      <div class="title-panel hidden" id="panel-help">
+        <div class="panel-box">
+          <h2>帮助</h2>
+          <p class="panel-text">封路、修工事、架火力，把尸潮引进杀伤区，守住指挥据点。炮台固定不动，步兵班与装甲车可以像 RTS 一样框选后右键调动。</p>
+          <ul class="keys">
+            <li><b>1~7</b> 选当前分组建筑 · <b>Tab</b> 切分类 · <b>V</b> 选择 · <b>X</b> 拆除模式开关 · <b>0</b> 兵营</li>
+            <li><b>左键</b> 放置/框选 · <b>右键</b> 移动或拆除 · <b>Ctrl+A</b> 全选 · <b>Shift+1~9</b> 编队 / <b>Alt+1~9</b> 召回</li>
+            <li><b>WASD</b>/方向键 移动视角 · 小地图点击跳转 · <b>Q</b> 炮击 <b>E</b> 燃烧弹 <b>I</b> 空降兵</li>
+            <li><b>P/Esc</b> 暂停 · <b>R</b> 换弹（Shift+R 重开）· <b>M</b> 静音 · <b>G</b> 架设（选中指挥官时改为投手雷）</li>
+        <li><b>Shift+E</b> 战吼 · <b>Shift+Q</b> 肾上腺素（都是指挥官技能，需选中她）</li>
+            <li><b>C</b> 停火/开火 · <b>T</b> 巡逻模式开关（先选单位，左键点起点→终点）· <b>F</b> 切换倍速 · <b>B</b>/<b>K</b> 买卖零件</li>
+          </ul>
+          <div class="panel-sub">单位面板里的数字</div>
+          <ul class="keys">
+            <li><b>射程 / 移动速度</b> 带 <b>×1.15</b> 时是地形或楼内加成后的实际值，鼠标悬停可看基准值</li>
+            <li><b>克制</b> 是该单位打 无甲 / 轻甲 / 重甲 的伤害倍率；打不同护甲的单位伤害不一样</li>
+            <li><b>对特感加成</b> 只有狙击手有：猎手 <b>×1.1</b> · 吐酸者 <b>×1.1</b> · 烟雾者 <b>×1.0</b></li>
+            <li><b>弹夹</b> 打空自动换弹，<b>R</b> 可提前换；<b>架设</b> 是机枪组 / 火箭筒 / 火炮的固定形态</li>
+            <li>面板最后一行只放这一屏用得上的（护甲 / 克制 / 弹夹 / 姿态）；移动和停火、巡逻、换弹的快捷键都在本页</li>
+          </ul>
+          <p class="panel-note">语音：Charlotte Duckett 录制 · Iwan Gabovitch 剪辑（CC-BY 3.0 / GPLv2）</p>
+          <p class="panel-note">枪械音效：由 Ben Jaszczak、Brian Nelson、Kevin Heras 和 Matthew Nanney 创作和录制（CC0）</p>
+          <div class="panel-foot">
+            <button id="btn-help-tut" class="panel-close ghost">重看新手引导</button>
+            <button id="btn-help-done" class="panel-close">知道了</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="pausemenu" class="screen overlay hidden">
+      <img class="side-art left" src="assets/portraits/art-left.webp?v=202611122308" onerror="this.onerror=null;this.src='assets/portraits/art-left.png'" alt="">
+      <img class="side-art right" src="assets/portraits/art-right.webp?v=202611122308" onerror="this.onerror=null;this.src='assets/portraits/art-right.png'" alt="">
+      <div class="card slim">
+        <h2>已暂停</h2>
+        <p class="sub">时间已冻结，随时继续。</p>
+        <div id="seedrow" class="seedrow"><span>地图</span><b id="pause-map">—</b><span>种子</span><b id="pause-seed">—</b><button id="btn-copy-seed" class="mini" title="复制「地图 + 种子」用于报 bug">复制种子</button></div>
+        <div class="row">
+          <button id="btn-resume" class="big primary">继续</button>
+          <button id="btn-pause-restart" class="big">重开本局</button>
+          <button id="btn-pause-home" class="big">回到标题</button>
+        </div>
+        <div class="volrow">
+          <label>背景音乐 <input id="vol-bgm" type="range" min="0" max="100" value="62" /></label>
+          <label>音效 <input id="vol-sfx" type="range" min="0" max="100" value="75" /></label>
+        </div>
+        <div class="volrow volrow2">
+          <label>武器 <input id="vol-weapon" type="range" min="0" max="100" value="100" /></label>
+          <label>爆炸 <input id="vol-boom" type="range" min="0" max="100" value="100" /></label>
+          <label>界面 <input id="vol-ui" type="range" min="0" max="100" value="100" /></label>
+          <label>环境 <input id="vol-amb" type="range" min="0" max="100" value="100" /></label>
+          <label>语音 <input id="vol-voice" type="range" min="0" max="100" value="100" /></label>
+        </div>
+        <div class="opthead">显示与关卡选项</div>
+        <div id="pause-opts" class="optgrid">
+          <button id="btn-dmg" class="mini" title="伤害数字开关">数值</button>
+          <button id="btn-path" class="mini" title="显示行进路径">路径</button>
+          <button id="btn-aggro" class="mini" title="僵尸仇恨值">仇恨·轻</button>
+          <button id="btn-aura" class="mini" type="button" title="回血光环显示（关了仍然回血）">光环</button>
+          <button id="btn-zbar" class="mini" title="僵尸血条">血条</button>
+          <button id="btn-decal" class="mini on" title="战场痕迹：僵尸/单位尸体与爆炸焦痕（关掉可减少画面杂乱）">痕迹·开</button>
+          <button id="btn-ff" class="mini on" title="范围伤害会不会打到自己人（默认开）">友伤·开</button>
+          <button id="btn-hudart" class="mini" title="战斗中在右下角显示角色立绘">立绘</button>
+          <button id="btn-edge" class="mini on" title="鼠标贴到屏幕边缘时移动视角（默认开）">贴边·开</button>
+          <button id="btn-crit" class="mini on" title="命中时有概率造成双倍伤害：默认 3%、狙击 12%、霰弹 8%、机枪/装甲车/溅射 2%（默认开，下次开局生效）">暴击·开</button>
+      <button id="btn-zvary" class="mini on" title="行尸个体差异：血量 35/40/46 三档、伤害与攻速浮动（默认开，下次开局生效）">变异·开</button>
+        </div>
+        <ul class="keys">
+          <li><b>P / Esc</b> 继续 · <b>R</b> 重开 · <b>M</b> 静音</li>
+        </ul>
+      </div>
+    </div>
+
+    <div id="result" class="screen hidden">
+      <img class="side-art left" src="assets/portraits/art-left.webp?v=202611122308" onerror="this.onerror=null;this.src='assets/portraits/art-left.png'" alt="">
+      <img class="side-art right" src="assets/portraits/art-right.webp?v=202611122308" onerror="this.onerror=null;this.src='assets/portraits/art-right.png'" alt="">
+      <div class="card">
+        <h2 id="res-title">胜利</h2>
+        <p id="res-sub" class="sub"></p>
+        <div id="res-stats" class="stats"></div>
+        <div class="row">
+          <button id="btn-retry" class="big primary">同种子再来</button>
+          <button id="btn-newmap" class="big">换一场</button>
+          <button id="btn-home" class="big">回到标题</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="unitinfo" class="unitinfo hidden">
+      <div class="ui-head"><img id="ui-icon" alt="" /><b id="ui-name">—</b></div>
+      <div class="ui-hp"><i id="ui-hpfill"></i></div>
+      <div class="ui-line"><span>血量</span><b id="ui-hp">—</b></div>
+      <div class="ui-grid">
+        <div><span>攻击力</span><b id="ui-dmg">—</b></div>
+        <div><span>射速</span><b id="ui-rate">—</b></div>
+        <div><span>射程</span><b id="ui-range">—</b></div>
+        <div><span>移动速度</span><b id="ui-speed">—</b></div>
+        <div><span>护甲</span><b id="ui-armor">—</b></div>
+      </div>
+      <div class="ui-note" id="ui-note"></div>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+  </div>
+<script>
+  // 双击打开（file://）时 ES Module 会被浏览器拦截，这里给一句人话提示
+  if (location.protocol === 'file:') {
+    document.addEventListener('DOMContentLoaded', function () {
+      var d = document.createElement('div');
+      d.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#0b0f14;color:#dfe8f3;font:15px/1.9 system-ui,sans-serif;padding:40px;text-align:center;white-space:pre-line;';
+      d.textContent = '这个游戏不能直接双击 index.html 打开（浏览器会拦截 ES Module）。\n\n'
+        + '请用本地服务访问：\n  http://127.0.0.1:8080/\n\n'
+        + '或者在本目录执行：\n  python tools/serve.py 8080\n'
+        + '然后浏览器打开 http://127.0.0.1:8080/';
+      document.body.appendChild(d);
+    });
+  }
+</script>
+<div id="mstone"></div>
+  <!-- 核心升级三选一：清完第 1/3/5/7 波后从顶栏下方滑出 -->
+  <div id="perkbar" class="hidden">
+    <div class="perk-head">核心升级<span class="perk-sub">三选一 · 每项整局只能拿一次</span><b id="perk-timer">8s</b></div>
+    <div class="perk-row" id="perk-row"></div>
+    <div class="perk-progress"><i id="perk-progress"></i></div>
+  </div>
+  <div id="fade"></div>
+<div id="rotate"><div class="rot-inner"><b>请横过来玩</b><span>这款游戏需要横屏才能看清战场</span></div></div>
+<script type="module" src="js/main.js?v=202611122308"></script>
+<script type="module" src="js/touch.js?v=202611122308"></script>
+<div id="voice-sub" class="voice-sub"></div>
+</body>
+</html>
