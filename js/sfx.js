@@ -1035,14 +1035,20 @@ export class Sfx {
   loadMusic() {
     const c = this.ctx;
     if (!c || this.tracks) return;
+    // OGG Vorbis 只有 WAV 的 1/20 体积，但 iOS Safari 不支持 => 探测一次，不支持就用 wav
+    const canOgg = (() => {
+      try { return !!new Audio().canPlayType('audio/ogg; codecs="vorbis"'); } catch (e) { return false; }
+    })();
     const M = {
       title: 'assets/audio/bgm/airy.mp3',
       prep: 'assets/audio/bgm/pulse.mp3',
       battle: 'assets/audio/bgm/urgent.mp3',
       win: 'assets/audio/bgm/victory.mp3',
       lose: 'assets/audio/bgm/transmission.mp3',
-      forest: 'assets/audio/bgm/forest-suspense.wav', // 黑松林专属：Mixkit 悬疑低频，31.9s 无缝循环
-      rust: 'assets/audio/bgm/rust-pulse.wav', // Rust Block 专属：Mixkit 低频脉冲，15.9s 无缝循环
+      // 黑松林专属：Mixkit 悬疑低频，31.9s 无缝循环
+      forest: canOgg ? 'assets/audio/bgm/forest-suspense.ogg' : 'assets/audio/bgm/forest-suspense.wav',
+      // Rust Block 专属：Mixkit 低频脉冲，15.9s 无缝循环
+      rust: canOgg ? 'assets/audio/bgm/rust-pulse.ogg' : 'assets/audio/bgm/rust-pulse.wav',
     };
     this.tracks = {};
     for (const k in M) {

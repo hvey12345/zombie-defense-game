@@ -1035,7 +1035,16 @@ function setResultArt(won) {
   const R = box.querySelector('.side-art.right');
   // 胜利沿用待命那张（两人并肩是“守住了”）；失败换一张——金发那张是跪姿特写，
   // 压暗去饱和后只剩轮廓，正好读作“就剩她一个还跪在这里”。
-  if (L) L.src = won ? 'assets/portraits/art-left.png' : 'assets/portraits/art-lose.png';
+  if (L) {
+    L.onerror = null;
+    if (won) {
+      L.src = 'assets/portraits/art-left.png';
+    } else {
+      // WebP 只有 PNG 的 1/7，老浏览器不支持时回落原图
+      L.onerror = () => { L.onerror = null; L.src = 'assets/portraits/art-lose.png'; };
+      L.src = 'assets/portraits/art-lose.webp';
+    }
+  }
   if (R) R.src = 'assets/portraits/art-right.png';
   document.body.classList.toggle('menu-win', !!won);
   document.body.classList.toggle('menu-lose', !won);
