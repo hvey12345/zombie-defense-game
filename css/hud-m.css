@@ -459,3 +459,73 @@ body.touch #mskillpop button .cd {
   font-size: 9px; line-height: 1; color: #9fd4ff;
 }
 body.touch #mskillpop button.off { opacity: 0.42; }
+
+/* ===== v17：资源并进第一行 / 右缘换架设 / ☰ 变技能板 / 隐藏指挥官 ===== */
+body.touch #topbar {
+  grid-template-areas: "left center right";
+  grid-template-columns: auto auto 1fr;
+  align-items: center;
+  padding: 2px 6px;
+}
+body.touch #topbar .tb-left { grid-area: left; }
+body.touch #topbar .tb-center { grid-area: center; justify-content: flex-start; margin: 0 0 0 8px; }
+body.touch #topbar .tb-right { grid-area: right; justify-content: flex-end; }
+body.touch #topbar .zline { display: none; }
+
+body.touch #mquick button[data-act="deploy"] { font-size: 11px; }
+
+body.touch #mtools { width: 112px; }
+body.touch #mtools button[data-kind="skill"] {
+  height: 46px; display: flex; align-items: center; gap: 6px;
+  font-size: 10px; padding: 0 6px; position: relative; text-align: left;
+}
+body.touch #mtools button[data-kind="skill"] img { width: 22px; height: 22px; flex: 0 0 auto; }
+body.touch #mtools button[data-kind="skill"] b { font-weight: 500; }
+body.touch #mtools button[data-kind="skill"] .cd {
+  position: absolute; right: 5px; bottom: 3px; font-size: 9px; color: #9fd4ff;
+}
+body.touch #mtools button[data-kind="skill"].off { opacity: 0.42; }
+
+body.touch #mfab .rd {
+  position: absolute; top: -3px; right: -3px; min-width: 13px; height: 13px;
+  border-radius: 7px; background: #2f7fc1; color: #fff; font-size: 9px; line-height: 13px;
+  text-align: center; font-style: normal; display: none;
+}
+body.touch #mfab .rd:not(:empty) { display: block; }
+body.touch #mfab.off { opacity: 0.55; }
+
+/* 手机版不带指挥官（技能不好点） */
+body.touch #prod-list .prod-item[data-id="hero"] { display: none !important; }
+
+/* ===== v18：顶栏改 flex 单行（grid 方案把左段挤没了）；右缘四枚与 ☰ 错开 ===== */
+body.touch #topbar {
+  display: flex; flex-wrap: nowrap; align-items: center; gap: 6px;
+  grid-template-areas: none; grid-template-columns: none;
+  padding: 2px 6px;
+}
+body.touch #topbar .tb-left { flex: 0 1 auto; min-width: 0; overflow: hidden; }
+body.touch #topbar .tb-center {
+  position: static !important; transform: none !important;
+  flex: 0 0 auto; margin: 0; justify-content: flex-start;
+}
+body.touch #topbar .tb-right { margin-left: auto; flex: 0 0 auto; }
+
+body.touch #mquick { top: 50px; gap: 6px; }
+body.touch #mquick button { height: 42px; }
+body.touch.bar-open #mquick { right: 56px; top: 46px; }
+
+/* ===== v19：lite 档恢复左段统计（据点/波次/僵尸），与资源同一行 ===== */
+body.touch.hud-lite #topbar .tb-left { display: flex !important; flex: 0 1 auto; gap: 4px; }
+body.touch #topbar .tb-left .stat { padding: 1px 3px; }
+
+/* 右缘四枚整体左移一列，避开 ☰（☰ 占 right:6 宽 44） */
+body.touch #mquick { right: 58px; }
+body.touch.bar-open #mquick { right: 58px; }
+
+/* ===== v20：☰ 技能抽屉挪到右缘动作列左侧，避免互相遮挡 ===== */
+body.touch #mtools { right: 120px; width: 118px; }
+body.touch #mtools button[data-kind="skill"] { font-size: 11px; }
+body.touch #mtools button[data-kind="skill"] b { font-size: 11px; white-space: nowrap; }
+
+/* ===== v21：技能只在 ☰ 里，底部浮条不再重复放技能 ===== */
+body.touch #skillbar { display: none !important; }

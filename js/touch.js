@@ -152,15 +152,17 @@ document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: fals
   const fab = document.createElement('button');
   fab.id = 'mfab';
   fab.type = 'button';
-  fab.textContent = '☰';
+  fab.innerHTML = '<span>☰</span><em class="rd"></em>';
   fab.setAttribute('aria-label', '更多操作');
   document.body.appendChild(fab);
 
   const box = document.createElement('div');
   box.id = 'mtools';
   box.innerHTML = [
-    '<button data-act="deploy">架设</button>',
-  ].join('');
+    ['strike', 'skill_strike', '炮击'],
+    ['fire', 'skill_fire', '燃烧弹'],
+    ['airdrop', 'skill_airdrop', '空降兵'],
+  ].map(([id, ico, nm]) => '<button data-kind="skill" data-id="' + id + '"><img src="assets/icons/' + ico + '.png" alt=""><b>' + nm + '</b><span class="cd"></span></button>').join('');
   document.body.appendChild(box);
 
   // 常驻常用键：全选同类 / 取消选中（右缘竖排，3 秒无操作自动淡出）
@@ -170,20 +172,11 @@ document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: fals
     '<button data-act="same">全选<br>同类</button>',
     '<button data-act="clear">取消<br>选中</button>',
     '<button data-act="reload">换弹</button>',
-    '<button data-act="skill" aria-label="技能"><img src="assets/icons/skill_strike.png" alt=""><span class="cd"></span></button>',
+    '<button data-act="deploy">架设</button>',
   ].join('');
   document.body.appendChild(quick);
 
-  // 技能竖列（纯图标 + 角标）：炮击 / 燃烧弹 / 空降兵
-  const pop = document.createElement('div');
-  pop.id = 'mskillpop';
-  pop.innerHTML = [
-    ['strike', 'assets/icons/skill_strike.png'],
-    ['fire', 'assets/icons/skill_fire.png'],
-    ['airdrop', 'assets/icons/skill_airdrop.png'],
-  ].map(([id, ico]) => '<button data-id="' + id + '"><img src="' + ico + '" alt=""><span class="cd"></span></button>').join('');
-  document.body.appendChild(pop);
-  const qSkill = quick.querySelector('[data-act="skill"]');
+  const qDeploy = quick.querySelector('[data-act="deploy"]');
   const qSame = quick.querySelector('[data-act="same"]');
   const qClear = quick.querySelector('[data-act="clear"]');
   const qReload = quick.querySelector('[data-act="reload"]');
@@ -195,22 +188,23 @@ document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: fals
     dimTimer = setTimeout(() => quick.classList.add('dim'), 3000);
   }
   wake();
-  window.addEventListener('pointerdown', (ev) => {
-    wake();
-    if (!pop.contains(ev.target) && !qSkill.contains(ev.target)) pop.classList.remove('open');
-  }, { passive: true });
+  window.addEventListener('pointerdown', () => { wake(); }, { passive: true });
 
   function syncQuick() {
     const v = window.__dclView ? window.__dclView() : null;
     const picked = v && (v.sel > 0 || v.selCore || v.selF || v.selNode);
     qSame.classList.toggle('off', !picked);
     qClear.classList.toggle('off', !picked);
-    // 换弹：跟桌面版原按钮的可点状态同步
-    const rs = document.getElementById('btn-reload');
-    if (rs && qReload) {
-      const off = rs.classList.contains('na') || rs.classList.contains('locked') || rs.disabled;
-      qReload.classList.toggle('off', off);
-    }
+    // 换弹 / 架设：跟桌面版原按钮的可点状态同步
+    const mirror = (srcId, dst) => {
+      const src = document.getElementById(srcId);
+      if (src && dst) {
+        const off = src.classList.contains('na') || src.classList.contains('locked') || src.disabled;
+        dst.classList.toggle('off', off);
+      }
+    };
+    mirror('btn-reload', qReload);
+    mirror('btn-deploy', qDeploy);
   }
   syncQuick();
   setInterval(syncQuick, 350);
@@ -221,7 +215,7 @@ document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: fals
     let ready = 0;
     for (const id of SK) {
       const src = document.getElementById('skill-' + id);
-      const btn = pop.querySelector('[data-id="' + id + '"]');
+      const btn = box.querySelector('[data-id="' + id + '"]');
       if (!src || !btn) continue;
       const cooling = src.classList.contains('cooling');
       const poor = src.classList.contains('poor');
@@ -232,25 +226,12 @@ document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: fals
       if (b1) b1.textContent = txt;
       btn.classList.toggle('off', cooling || poor);
     }
-    const badge = qSkill.querySelector('.cd');
+    const badge = fab.querySelector('.rd');
     if (badge) badge.textContent = ready > 0 ? String(ready) : '';
-    qSkill.classList.toggle('off', ready === 0);
+    fab.classList.toggle('off', ready === 0);
   }
   syncSkills();
   setInterval(syncSkills, 350);
-
-  qSkill.addEventListener('click', (e) => {
-    e.stopPropagation();
-    pop.classList.toggle('open');
-  });
-  pop.addEventListener('click', (e) => {
-    const btn = e.target.closest('button[data-id]');
-    if (!btn) return;
-    const id = btn.dataset.id;
-    const src = document.getElementById('skill-' + id);
-    if (src) src.click();
-    pop.classList.remove('open');
-  });
 
   quick.addEventListener('click', (e) => {
     const btn = e.target.closest('button');
@@ -268,6 +249,8 @@ document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: fals
     } else if (act === 'reload') {
       const rb = document.getElementById('btn-reload');
       if (rb) rb.click();
+    } else if (act === 'deploy') {
+      if (window.__dclSel) window.__dclSel.deploy();
     }
     syncQuick();
   });
@@ -294,13 +277,10 @@ document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: fals
   box.addEventListener('click', (e) => {
     const btn = e.target.closest('button');
     if (!btn) return;
-    const act = btn.dataset.act;
-    if (act === 'deploy') {
-      if (window.__dclSel) window.__dclSel.deploy();
-      btn.classList.toggle('on');
-    } else if (act === 'demolish') {
-      if (window.__dclSel) window.__dclSel.demolish();
-      btn.classList.toggle('on');
+    const id = btn.dataset.id;
+    if (btn.dataset.kind === 'skill' && id) {
+      const src = document.getElementById('skill-' + id);
+      if (src) src.click();
     }
     close();
   });
