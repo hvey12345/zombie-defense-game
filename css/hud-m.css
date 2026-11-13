@@ -631,3 +631,35 @@ body.touch.m-zcard #unitinfo .ui-note { display: none !important; }
 body.touch.m-ui-off #mquick,
 body.touch.m-ui-off #mfab,
 body.touch.m-ui-off #mtools { display: none !important; }
+
+/* ===== v29：手机版暂停菜单隐藏「显示与关卡选项」整块（方案 B：只隐藏 UI，不改取值） ===== */
+body.touch .opthead,
+body.touch #pause-opts { display: none !important; }
+
+/* ===== v30：矮屏暂停面板可滚动、压缩内边距，避免标题被裁 ===== */
+@media (max-height: 480px) {
+  body.touch #pausemenu { align-items: flex-start !important; justify-content: center; overflow-y: auto; padding: 6px 8px; }
+  body.touch #pausemenu .card { padding: 12px 16px; margin: auto 0; width: min(620px, 96%); }
+  body.touch #pausemenu .card h2 { font-size: 19px; margin: 0 0 2px; }
+  body.touch #pausemenu .card .sub { margin: 0 0 6px; font-size: 12px; }
+  body.touch #pausemenu .seedrow { margin-bottom: 6px; font-size: 12px; gap: 6px; }
+  body.touch #pausemenu .row { gap: 6px; margin-bottom: 6px; }
+  body.touch #pausemenu .row .big { height: 32px; font-size: 13px; padding: 0 12px; }
+  body.touch #pausemenu .volrow { gap: 6px 10px; margin-bottom: 4px; }
+  body.touch #pausemenu .keys { margin-top: 4px; font-size: 11px; }
+}
+
+/* ===== v30b：暂停面板音量区改「标签在上、滑桿在下」，避免文字换行与滑桿顶边 ===== */
+@media (max-height: 480px) {
+  body.touch #pausemenu .volrow,
+  body.touch #pausemenu .volrow2 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  body.touch #pausemenu .volrow label,
+  body.touch #pausemenu .volrow2 label {
+    display: flex; flex-direction: column; align-items: stretch; gap: 2px;
+    font-size: 11px; white-space: nowrap;
+  }
+  body.touch #pausemenu .volrow input[type="range"],
+  body.touch #pausemenu .volrow2 input[type="range"] { min-width: 0; width: 100%; }
+  /* perf 浮层在面板打开时让位 */
+  body.touch.m-ui-off #mperf { display: none !important; }
+}

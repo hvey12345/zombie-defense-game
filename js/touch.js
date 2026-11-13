@@ -458,7 +458,9 @@ syncOrient();
       const title = document.getElementById('title');
       const titleOn = !!(title && !title.classList.contains('hidden'));
       const panelOn = !!document.querySelector('.title-panel:not(.hidden)');
-      body.classList.toggle('m-ui-off', titleOn || panelOn);
+      const pauseOn = !!(document.getElementById('pausemenu') && !document.getElementById('pausemenu').classList.contains('hidden'));
+      const resultOn = !!(document.getElementById('result') && !document.getElementById('result').classList.contains('hidden'));
+      body.classList.toggle('m-ui-off', titleOn || panelOn || pauseOn || resultOn);
     }
     tick();
     setInterval(tick, 300);
