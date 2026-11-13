@@ -331,7 +331,16 @@ document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: fals
 })();
 
 // 画布铺满视口：改 backing store，宽高比跟设备一致，避免信箱黑边与拉伸
-const DPR = Math.min(1.5, window.devicePixelRatio || 1);   // v23：手机上省 44% 像素填充
+let DPR = Math.min(1.5, window.devicePixelRatio || 1);
+// 尸潮降档：main.js 在僵尸爆量时调到 1.0，回落后再升回 1.5
+function setDpr(v) {
+  const nv = Math.max(1, Math.min(1.5, v));
+  if (Math.abs(nv - DPR) < 0.01) return;
+  DPR = nv;
+  fitCanvas();
+}
+window.__dclSetDpr = setDpr;
+window.__dclDpr = () => DPR;   // v23：手机上省 44% 像素填充
 function fitCanvas() {
   const w = Math.round(window.innerWidth * DPR);
   const h = Math.round(window.innerHeight * DPR);
@@ -446,8 +455,8 @@ syncOrient();
     const u = run ? run.units.length : 0;
     const rd = run ? (run.raiders ? run.raiders.length : 0) : 0;
     const dc = run && run.decals ? run.decals.length : 0;
-    const dpr = Math.min(1.5, window.devicePixelRatio || 1);
-    box.textContent = `FPS ${fps} · 僵尸 ${z} · 我方 ${u} · 叛军 ${rd} · 痕迹 ${dc} · DPR ${dpr.toFixed(1)} · ${window.innerWidth}×${window.innerHeight}`;
+    
+    box.textContent = `FPS ${fps} · 僵尸 ${z} · 我方 ${u} · 叛军 ${rd} · 痕迹 ${dc} · DPR ${DPR.toFixed(1)} · ${window.innerWidth}×${window.innerHeight}`;
     const _ap = window.__dcl || {};
     box.textContent += ' \u00b7 \u903b ' + (_ap.msLogic || 0).toFixed(1) + 'ms \u00b7 \u7ed8 ' + (_ap.msDraw || 0).toFixed(1) + 'ms';
   }, 500);

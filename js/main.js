@@ -1477,6 +1477,13 @@ function loop(t) {
     const half = (typeof window !== 'undefined' && window.__dshMobile)
       && !/[?&]fps=60\b/.test(location.search);   // 手机档默认半帧重绘（≈30fps），?fps=60 可关掉做 A/B
     app.rSkip = !app.rSkip;
+    // 尸潮自动降 DPR（只手机）：>450 降到 1.0，回落到 <300 再升回 1.5
+    if (typeof window !== 'undefined' && window.__dshMobile && window.__dclSetDpr && app.run) {
+      const zn = app.run.zombies.length;
+      const cur = window.__dclDpr ? window.__dclDpr() : 0;
+      if (zn > 450 && cur > 1.05) window.__dclSetDpr(1);
+      else if (zn < 300 && cur < 1.45) window.__dclSetDpr(1.5);
+    }
     if (!half || app.rSkip) { const _tD = performance.now(); render(); app.msDraw = performance.now() - _tD; }
   }
   app.hudT += dt;
