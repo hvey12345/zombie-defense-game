@@ -650,6 +650,13 @@ function refreshUnitInfo() {
       $('ui-note').textContent += ' · ' + txt;
     }
   }
+  // 手机端面板读数：DOM 会被其它面板（地形/建筑）覆盖，这里存一份稳定快照
+  window.__dclUnit = {
+    name: def.name || u.kind,
+    dmg: `${def.dmg}`,
+    range: $('ui-range').textContent,
+    rate: (1 / trueGap).toFixed(2),
+  };
   syncStanceButtons();
 }
 
@@ -3183,6 +3190,39 @@ function syncStanceButtons() {
   syncReloadBtn();
 }
 
+// ---- 手机端：进驻最近的可进驻建筑（据点/兵营/工厂/楼房；半径 padMax 格）----
+function garrisonNearest(padMax = 2) {
+  const run = app.run;
+  if (!run || !app.sel.size) return null;
+  const T = run.map.tile;
+  const us = [...app.sel]
+    .map((id) => run.units.find((u) => u.id === id))
+    .filter((u) => u && u.hp > 0 && !u.inside);
+  if (!us.length) return null;
+  let best = null;
+  let bestD = Infinity;
+  for (const u of us) {
+    for (let dy = -padMax; dy <= padMax; dy += 1) {
+      for (let dx = -padMax; dx <= padMax; dx += 1) {
+        const b = garrisonAt(run, u.x + dx * T, u.y + dy * T, 0);
+        if (!b || !b.garrison || b.hp <= 0) continue;
+        if (garrisonUsed(run, b) >= garrisonCap(b)) continue;
+        const d = dx * dx + dy * dy;
+        if (d < bestD) { bestD = d; best = b; }
+      }
+    }
+  }
+  return best;
+}
+window.__dclGarrisonReady = (padMax = 2) => !!garrisonNearest(padMax);
+window.__dclGarrisonGo = (padMax = 2) => {
+  const b = garrisonNearest(padMax);
+  if (!b) { toast('2 格内没有可进驻的建筑，先靠近再点'); return 0; }
+  const n = orderGarrison(app.run, [...app.sel], b);
+  if (n > 0) { sfx.click(); toast(`进驻：${b.name || '建筑'}`); } else { sfx.deny(); }
+  return n;
+};
+
 function rightClick(p) {
   const run = app.run;
   if (!run) return;
@@ -3990,6 +4030,15 @@ function bootDone() {
 
 // 触屏桥：touch.js 复用同一套点击逻辑，不重写一遍
 window.__dclSel = { sameKind: sameKindSelect, clearAll: clearAllSelect, deploy: toggleDeploySel, demolish: requestDemolish };
+
+// 调试：直接在指定格造一个单位/工事（等价于点生产格后再点地图）
+window.__dclEnqueue = (kind, id, tx, ty, srcId) => {
+  const run = app.run;
+  if (!run) return { ok: false, msg: 'no run' };
+  const src = srcId || app.srcId || 'core';
+  app.srcId = src;
+  return enqueueAt(run, kind, id, tx, ty, src);
+};
 window.__dclHit = {
   unitAt, fortAt, coreHit, nodeAt, raiderAt, zombieAt, occupantAt,
   tileFromEvent, posFromEvent,

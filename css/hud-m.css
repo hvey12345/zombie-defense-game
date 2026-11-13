@@ -593,3 +593,41 @@ body.touch #mperf { display: block; }
   body.touch #mquick button { height: 38px; font-size: 11px; border-radius: 9px; }
   body.touch #mquick button[data-act="deploy"] { height: 38px; }
 }
+
+
+/* ===== v26：技能抽屉竖排加宽（文字不再溢出）；右缘第 4 枚进驻 ===== */
+body.touch #mtools {
+  right: 120px; width: 152px;
+  flex-direction: column; flex-wrap: nowrap; gap: 6px;
+}
+body.touch #mtools button {
+  width: 100%; height: 40px; flex: 0 0 auto;
+  display: flex; align-items: center; justify-content: flex-start;
+  gap: 8px; padding: 0 10px;
+}
+body.touch #mtools button[data-kind="skill"] img { width: 22px; height: 22px; flex: 0 0 auto; }
+body.touch #mtools button[data-kind="skill"] b { font-size: 12px; white-space: nowrap; overflow: visible; }
+body.touch #mtools button[data-kind="skill"] .cd {
+  position: static; margin-left: auto;
+  font-size: 11px; color: #9fd4ff;
+}
+body.touch #mquick button[data-act="garrison"] { font-size: 12px; }
+body.touch #mquick button[data-act="garrison"].off { opacity: 0.42; }
+
+/* ===== v27：面板分级（非玩家对象不弹；僵尸只留图标+血量）===== */
+body.touch.m-nocard #unitinfo { display: none !important; }
+body.touch.m-zcard #unitinfo .ui-grid,
+body.touch.m-zcard #unitinfo .ui-note { display: none !important; }
+
+/* ===== v28：超矮屏（<=400px）右缘四枚压到 36px，避免被 ☰ 压住 ===== */
+@media (max-height: 400px) {
+  body.touch #mquick { top: 42px; gap: 5px; }
+  body.touch #mquick button { height: 36px; font-size: 11px; }
+  body.touch #mfab { width: 44px; height: 44px; bottom: 6px; right: 64px; }
+  body.touch.bar-open #mfab { bottom: 78px; }
+}
+
+/* ===== v28：标题/帮助/暂停时隐藏手机专有按钮 ===== */
+body.touch.m-ui-off #mquick,
+body.touch.m-ui-off #mfab,
+body.touch.m-ui-off #mtools { display: none !important; }

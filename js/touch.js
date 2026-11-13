@@ -182,12 +182,14 @@ document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: fals
     '<button data-act="same">全选<br>同类</button>',
     '<button data-act="clear">取消<br>选中</button>',
     '<button data-act="deploy">架设</button>',
+    '<button data-act="garrison" class="off">进驻</button>',
   ].join('');
   document.body.appendChild(quick);
 
   const qDeploy = quick.querySelector('[data-act="deploy"]');
   const qSame = quick.querySelector('[data-act="same"]');
   const qClear = quick.querySelector('[data-act="clear"]');
+  const qGarrison = quick.querySelector('[data-act="garrison"]');
 
 
   let dimTimer = 0;
@@ -213,6 +215,10 @@ document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: fals
       }
     };
     mirror('btn-deploy', qDeploy);
+    if (qGarrison) {
+      const ok = window.__dclGarrisonReady ? window.__dclGarrisonReady(2) : false;
+      qGarrison.classList.toggle('off', !ok);
+    }
   }
   syncQuick();
   setInterval(syncQuick, 350);
@@ -256,6 +262,8 @@ document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: fals
       if (window.__dclSel) window.__dclSel.clearAll();
     } else if (act === 'deploy') {
       if (window.__dclSel) window.__dclSel.deploy();
+    } else if (act === 'garrison') {
+      if (window.__dclGarrisonGo) window.__dclGarrisonGo(2);
     }
     syncQuick();
   });
@@ -358,9 +366,16 @@ syncOrient();
     const app = window.__dcl;
     const pickedUnit = !!(app && app.sel && app.sel.size > 0);
     if (pickedUnit) {
-      const d = txt('ui-dmg');
-      const r = txt('ui-range');
-      const rt = txt('ui-rate');
+      // 主读数取自 #src-sub：syncBarTitle 用 def 直接拼，永远是真实数值
+      const subTxt = sub ? sub.textContent : '';
+      const grab = (label) => {
+        const m = subTxt.match(new RegExp(label + '\\s*([0-9.]+)'));
+        return m ? m[1] : '';
+      };
+      const snap = window.__dclUnit;
+      const d = grab('攻击') || (snap ? `${snap.dmg}` : txt('ui-dmg'));
+      const r = grab('射程') || (snap ? snap.range : txt('ui-range'));
+      const rt = grab('射速') || (snap ? snap.rate : txt('ui-rate'));
       const parts = [];
       if (d && d !== '—') parts.push('伤害 ' + d.replace(/\s*[（(].*[)）]\s*$/, ''));
       if (r && r !== '—') parts.push('射程 ' + r);
@@ -377,6 +392,23 @@ syncOrient();
   syncPanel();
   setInterval(() => { trimCosts(); syncPanel(); }, 300);
 })();
+  // ===== v27：面板分级 =====
+  // 非玩家对象（空地/树/别人的建筑）不弹面板；僵尸只留图标+血量
+  (function panelTier() {
+    const body = document.body;
+    function tick() {
+      const app = window.__dcl;
+      if (!app) return;
+      const unitPicked = !!(app.sel && app.sel.size > 0);
+      const zPicked = app.selZ != null;
+      const ownPicked = !!(app.selF || app.selNode || app.selCore || app.selRaid != null);
+      body.classList.toggle('m-zcard', !unitPicked && zPicked && !ownPicked);
+      body.classList.toggle('m-nocard', !unitPicked && !zPicked && !ownPicked);
+    }
+    tick();
+    setInterval(tick, 300);
+  })();
+
 
 // ===== v23：?perf=1 性能浮层（FPS / 帧耗时 / 实体数）=====
 (function perf() {
@@ -405,3 +437,16 @@ syncOrient();
     box.textContent = `FPS ${fps} · 僵尸 ${z} · 我方 ${u} · 叛军 ${rd} · 痕迹 ${dc} · DPR ${dpr.toFixed(1)} · ${window.innerWidth}×${window.innerHeight}`;
   }, 500);
 })();
+
+  // ===== v28：标题页/设置/帮助/暂停面板打开时，收起手机专有按钮 =====
+  (function uiGate() {
+    const body = document.body;
+    function tick() {
+      const title = document.getElementById('title');
+      const titleOn = !!(title && !title.classList.contains('hidden'));
+      const panelOn = !!document.querySelector('.title-panel:not(.hidden)');
+      body.classList.toggle('m-ui-off', titleOn || panelOn);
+    }
+    tick();
+    setInterval(tick, 300);
+  })();
