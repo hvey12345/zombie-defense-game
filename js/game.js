@@ -16,9 +16,16 @@ export const EVENTS_MAX = 48;
 export const DECAL_CAP = Object.freeze({ zbody: 80, ubody: 5, rbody: 10, scorch: 18 });
 export const DECAL_LIFE = Object.freeze({ zbody: 20, ubody: 20, rbody: 20, scorch: 16 });
 
+// 手机档（touch 层设置 window.__dshMobile）：尸体/痕迹减量 + 寿命缩短
+export const DECAL_CAP_MOBILE = Object.freeze({ zbody: 24, ubody: 2, rbody: 4, scorch: 8 });
+const DECAL_LIFE_MOBILE = Object.freeze({ zbody: 8, ubody: 8, rbody: 8, scorch: 6 });
+export function mobileTuned() { return typeof window !== 'undefined' && !!window.__dshMobile; }
+export function decalCap() { return mobileTuned() ? DECAL_CAP_MOBILE : DECAL_CAP; }
+export function decalLife() { return mobileTuned() ? DECAL_LIFE_MOBILE : DECAL_LIFE; }
+
 function pushDecal(run, d) {
   if (!run.decals) run.decals = [];
-  const cap = DECAL_CAP[d.k] || 40;
+  const cap = decalCap()[d.k] || 40;
   let n = 0;
   for (const e of run.decals) if (e.k === d.k) n++;
   // 一次裁到 cap-1：既有「满了顶掉最旧一条」的常态，也能收拾历史超额的数组
@@ -3018,7 +3025,7 @@ export function stepRaiders(run, dt) {
           rot: rveh ? (run.fxRng.next() - 0.5) * 0.8 : (run.fxRng.next() - 0.5) * 0.3,
           s: rveh ? 1 : 0.72,
           blood: rveh ? null : ((run.fxRng.next() * 3) | 0),
-          life: DECAL_LIFE.rbody, max: DECAL_LIFE.rbody,
+          life: decalLife().rbody, max: decalLife().rbody,
         });
       }
       // 叛军步兵阵亡也会变行尸（与玩家步兵同一套概率/上限；载具不转）
@@ -3099,7 +3106,7 @@ export function boomAt(run, cfg, x, y, tag) {
     pushDecal(run, {
       k: 'scorch', x, y, r: (cfg.radius || 0) * 0.55,
       rot: run.fxRng.next() * Math.PI * 2, v: Math.floor(run.fxRng.next() * 3),
-      life: DECAL_LIFE.scorch, max: DECAL_LIFE.scorch,
+      life: decalLife().scorch, max: decalLife().scorch,
     });
   }   // 导出供 tools 自测（boom-check）
   const R = cfg.radius, f = cfg.falloff != null ? cfg.falloff : 0.5;
@@ -5289,7 +5296,7 @@ function cleanDeadUnits(run) {
         rot: veh ? (run.fxRng.next() - 0.5) * 0.8 : (run.fxRng.next() - 0.5) * 0.3,
         s: veh ? 1 : 0.72,
         blood: veh ? null : ((run.fxRng.next() * 3) | 0),
-        life: DECAL_LIFE.ubody, max: DECAL_LIFE.ubody,
+        life: decalLife().ubody, max: decalLife().ubody,
       });
     }
     run.units.splice(i, 1);
@@ -5349,7 +5356,7 @@ function cleanDead(run) {
           k: 'scorch', x: z.x, y: z.y,
           r: 9 + bodySize * 0.6,
           rot: run.fxRng.next() * Math.PI * 2,
-          v: 0, life: DECAL_LIFE.scorch * 0.6, max: DECAL_LIFE.scorch * 0.6,
+          v: 0, life: decalLife().scorch * 0.6, max: decalLife().scorch * 0.6,
         });
       }
       pushDecal(run, {
@@ -5361,7 +5368,7 @@ function cleanDead(run) {
         rot: (run.fxRng.next() - 0.5) * 2.72,   // ±78°：躺得更横七竖八
         s: Math.min(2.6, bodySize / 11),
         blood: charred ? null : Math.floor(run.fxRng.next() * 3),
-        life: DECAL_LIFE.zbody, max: DECAL_LIFE.zbody,
+        life: decalLife().zbody, max: decalLife().zbody,
       });
     }
     emit(run, { t: 'zdie', x: z.x, y: z.y, mob: z.mob });

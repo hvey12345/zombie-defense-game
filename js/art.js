@@ -350,7 +350,8 @@ export function drawScene(ctx, run, view = {}) {
   const viewH = view.h || (ctx.canvas.height / zoom);
   const cpX = view.cx != null ? view.cx - viewW / 2 : camX;
   const cpY = view.cy != null ? view.cy - viewH / 2 : camY;
-  const cullX0 = cpX - 48, cullY0 = cpY - 48, cullX1 = cpX + viewW + 48, cullY1 = cpY + viewH + 48;
+  const CULL = (typeof window !== 'undefined' && window.__dshMobile) ? 16 : 48;
+  const cullX0 = cpX - CULL, cullY0 = cpY - CULL, cullX1 = cpX + viewW + CULL, cullY1 = cpY + viewH + CULL;
   const inView = (x, y) => x >= cullX0 && x <= cullX1 && y >= cullY0 && y <= cullY1;
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   ctx.save();

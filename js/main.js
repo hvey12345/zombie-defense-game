@@ -1443,6 +1443,9 @@ function loop(t) {
     // 暂停时不会进入这段，alpha 自然冻结在暂停那一刻的中间态，不会跳到未来位置。
     app.alpha = Math.max(0, Math.min(1, app.acc / RULE.perf.stepDt));
     drainEvents(run);
+    if (typeof window !== 'undefined' && window.__dshMobile && run.effects && run.effects.length > 60) {
+      run.effects.splice(0, run.effects.length - 60);
+    }
     if (run.core.hp < app.lastCoreHp) {
       sfx.coreHit();
       app.shake = Math.max(app.shake, 3);
@@ -1462,7 +1465,12 @@ function loop(t) {
     if (app.markers[i].life <= 0) app.markers.splice(i, 1);
   }
 
-  render();
+  {
+    const half = (typeof window !== 'undefined' && window.__dshMobile)
+      && !/[?&]fps=60\b/.test(location.search);   // 手机档默认半帧重绘（≈30fps），?fps=60 可关掉做 A/B
+    app.rSkip = !app.rSkip;
+    if (!half || app.rSkip) render();
+  }
   app.hudT += dt;
   if (app.hudT > 0.08) { app.hudT = 0; refreshHud(); refreshUnitInfo(); }
   requestAnimationFrame(loop);
@@ -1502,6 +1510,7 @@ function syncAmbient(run, dt) {
 }
 
 function render() {
+  app.renderCount = (app.renderCount || 0) + 1;
   const run = app.run && (app.state === STATE.PREP || app.state === STATE.BATTLE || app.state === STATE.RESULT)
     ? app.run
     : app.preview;

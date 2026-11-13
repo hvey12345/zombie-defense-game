@@ -1,6 +1,8 @@
 // 手机版输入层：拖动平移 / 轻点选择与移动 / 双指缩放
 // 复用 main.js 的点击逻辑（合成 mouse 事件），不重写选择与指令。
 
+window.__dshMobile = true;
+
 const cv = document.getElementById('cv');
 const app = window.__dcl;
 const H = () => window.__dclHit;
@@ -92,6 +94,10 @@ cv.addEventListener('pointermove', (e) => {
 
   // 双指缩放
   if (pts.size >= 2 && pinch) {
+    // 手机档：缩放事件最多 30Hz，避免每帧重算视图与重绘
+    const _now = performance.now();
+    if (_now - (pinch.lastAt || 0) < 33) return;
+    pinch.lastAt = _now;
     const [a, b] = [...pts.values()];
     const dist = Math.hypot(a.x - b.x, a.y - b.y) || 1;
     const cx = (a.x + b.x) / 2, cy = (a.y + b.y) / 2;
@@ -131,7 +137,12 @@ function endPointer(e) {
     pinch = null;
     if (press && !press.moved && !wasPinch
       && performance.now() - press.t <= TAP_MS) {
-      tapAt(e.clientX, e.clientY);
+      // 手机档：两次点击至少间隔 110ms，挡住双指抬起时的误触
+      const _tn = performance.now();
+      if (_tn - (window.__dshLastTap || 0) >= 110) {
+        window.__dshLastTap = _tn;
+        tapAt(e.clientX, e.clientY);
+      }
     }
     press = null;
   }
@@ -416,7 +427,7 @@ syncOrient();
   const box = document.createElement('div');
   box.id = 'mperf';
   document.body.appendChild(box);
-  let last = 0, acc = 0, n = 0, fps = 0;
+  let last = 0, acc = 0, n = 0, fps = 0, lastCount = -1;
   function tick(t) {
     if (last) {
       const dt = t - last;
@@ -427,7 +438,9 @@ syncOrient();
   }
   requestAnimationFrame(tick);
   setInterval(() => {
-    if (n > 0) { fps = Math.round(1000 / (acc / n)); acc = 0; n = 0; }
+    const _cur = (window.__dcl && window.__dcl.renderCount) || 0;
+    if (lastCount >= 0) fps = Math.max(0, Math.round((_cur - lastCount) * 2));
+    lastCount = _cur;
     const run = window.__dcl && window.__dcl.run;
     const z = run ? run.zombies.length : 0;
     const u = run ? run.units.length : 0;
