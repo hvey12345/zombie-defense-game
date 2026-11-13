@@ -423,7 +423,7 @@ syncOrient();
 
 // ===== v23：?perf=1 性能浮层（FPS / 帧耗时 / 实体数）=====
 (function perf() {
-  if (!/[?&]perf=1/.test(location.search)) return;
+  if (/[?&]perf=0\b/.test(location.search)) return;   // 手机档默认显示，?perf=0 关
   const box = document.createElement('div');
   box.id = 'mperf';
   document.body.appendChild(box);

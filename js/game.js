@@ -24,6 +24,7 @@ export function decalCap() { return mobileTuned() ? DECAL_CAP_MOBILE : DECAL_CAP
 export function decalLife() { return mobileTuned() ? DECAL_LIFE_MOBILE : DECAL_LIFE; }
 
 function pushDecal(run, d) {
+  run._decalVer = (run._decalVer || 0) + 1;
   if (!run.decals) run.decals = [];
   const cap = decalCap()[d.k] || 40;
   let n = 0;
@@ -3600,6 +3601,44 @@ function buildingAim(b, px, py) {
   return best;
 }
 
+// 目标网格：按 tile 分桶，把「僵尸找最近单位」从全表扫描降为邻域查询。
+// 只在 stepRun 每帧重建一次（O(n)），查询侧只遍历半径内的桶。
+export function buildTargetGrid(run) {
+  const T = run.map.tile;
+  const gu = new Map();
+  const gr = new Map();
+  const push = (m, x, y, o) => {
+    const k = ((x / T) | 0) + ',' + ((y / T) | 0);
+    const arr = m.get(k);
+    if (arr) arr.push(o); else m.set(k, [o]);
+  };
+  for (const u of run.units) if (u.hp > 0) push(gu, u.x, u.y, u);
+  for (const r of (run.raiders || [])) if (r.hp > 0) push(gr, r.x, r.y, r);
+  run._gridU = gu;
+  run._gridR = gr;
+  run._gridT = T;
+}
+
+function gridNear(run, m, x, y, r) {
+  if (!m) return null;
+  const T = run._gridT || run.map.tile;
+  const r2 = r * r;
+  const x0 = ((x - r) / T) | 0, x1 = ((x + r) / T) | 0;
+  const y0 = ((y - r) / T) | 0, y1 = ((y + r) / T) | 0;
+  const out = [];
+  for (let ty = y0; ty <= y1; ty++) {
+    for (let tx = x0; tx <= x1; tx++) {
+      const arr = m.get(tx + ',' + ty);
+      if (!arr) continue;
+      for (const o of arr) {
+        const dx = o.x - x, dy = o.y - y;
+        if (dx * dx + dy * dy <= r2) out.push(o);
+      }
+    }
+  }
+  return out;
+}
+
 function pickAggroTarget(run, z) {
   if (z.mob === 'charger') return null;   // 攻城单位只盯工事/据点，不追人
   const A = RULE.aggro;
@@ -3610,7 +3649,7 @@ function pickAggroTarget(run, z) {
   if (dCore < A.coreRush * T) return null;   // 就快到据点了，不再被单位牵引
   const a1 = Math.atan2(coreY0 - z.y, coreX0 - z.x);
   let best = null, bestScore = -1, cur = null, curScore = -1;
-  for (const u of run.units) {
+  for (const u of (gridNear(run, run._gridU, z.x, z.y, sight) || run.units)) {
     if (u.hp <= 0) continue;
     // 楼内单位：对“那栋楼的外沿”取距离与视线（人躲在墙后，但僵尸能看到楼）
     let ux = u.x, uy = u.y, uOff = null;
@@ -3652,7 +3691,7 @@ function pickAggroTarget(run, z) {
   const rSight = sight * (RA.sightMul != null ? RA.sightMul : 1);
   const rWeight = RA.weight != null ? RA.weight : 0.8;
   let rb = null, rs = -1;
-  for (const r of (run.raiders || [])) {
+  for (const r of (gridNear(run, run._gridR, z.x, z.y, rSight) || (run.raiders || []))) {
     if (r.hp <= 0) continue;
     const d = Math.hypot(r.x - z.x, r.y - z.y);
     if (d > rSight) continue;
@@ -6196,6 +6235,7 @@ function stepFx(run, dt) {
 }
 
 export function stepRun(run, dt, snap) {
+  buildTargetGrid(run);
   // 核心升级三选一：窗口结束自动选第一张（不阻塞游戏推进）
   if (run.pendingPerk) {
     run.pendingPerk.t -= dt;

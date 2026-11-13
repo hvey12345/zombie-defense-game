@@ -2387,14 +2387,54 @@ function woundPair(name, color, wound) {
   return pair;
 }
 
+// ===== 静态痕迹层（手机档）：decals 只在变化时重绘到离屏 canvas =====
+let decalLayer = null;
+let decalLayerKey = '';
+function refreshDecalLayer(run) {
+  const map = run.map;
+  const T = map.tile;
+  const w = map.w * T, h = map.h * T;
+  if (!decalLayer || decalLayer.width !== w || decalLayer.height !== h) {
+    decalLayer = document.createElement('canvas');
+    decalLayer.width = w;
+    decalLayer.height = h;
+    decalLayerKey = '';
+  }
+  const key = run.decals.length + ':' + (run._decalVer || 0);
+  if (key !== decalLayerKey) {
+    const g = decalLayer.getContext('2d');
+    g.clearRect(0, 0, w, h);
+    paintDecals(g, run, true, null);
+    decalLayerKey = key;
+  }
+  return decalLayer;
+}
+
 function drawDecals(ctx, run, view, inView) {
   if (!view.decals || !run.decals || !run.decals.length) return;
-  const ld = (d) => Math.min(1, d.life / ((d.max || 20) * 0.25));   // 最后 25% 淡出
+  if (typeof window !== 'undefined' && window.__dshMobile) {
+    ctx.save();
+    ctx.globalAlpha = 1;
+    try {
+      ctx.drawImage(refreshDecalLayer(run), 0, 0);
+    } catch (e) {
+      paintDecals(ctx, run, false, inView);
+    }
+    ctx.restore();
+    return;
+  }
+  paintDecals(ctx, run, false, inView);
+}
+
+function paintDecals(ctx, run, whole, inView) {
+  if (!run.decals || !run.decals.length) return;
+  const ld = (d) => (whole ? 1 : Math.min(1, d.life / ((d.max || 20) * 0.25)));   // 最后 25% 淡出（静态层满不透明度）
+  const vis = whole ? (() => true) : inView;
 
   // 第一遍：地面层（血泊 / 载具下的焦黑 / 爆炸焦痕）——必须先铺完，
   // 否则后画的尸体自带血泊会盖住先画的尸体，尸体一多就糊成一锅红汤。
   for (const d of run.decals) {
-    if (!inView(d.x, d.y)) continue;
+    if (!vis(d.x, d.y)) continue;
     const fade = ld(d);
     if (d.k === 'zbody') {
       if (d.charred || d.blood == null) continue;   // 焦黑尸体不铺血泊（下面单独铺灰烬）
@@ -2444,7 +2484,7 @@ function drawDecals(ctx, run, view, inView) {
 
   // 第二遍：尸体与断肢
   for (const d of run.decals) {
-    if (!inView(d.x, d.y)) continue;
+    if (!vis(d.x, d.y)) continue;
     const fade = ld(d);
     if (d.k === 'zbody') {
       const zd = ZOMBIES[d.mob];
