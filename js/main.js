@@ -1431,6 +1431,7 @@ function loop(t) {
   const run = app.run;
   if (run && !app.paused && (app.state === STATE.PREP || app.state === STATE.BATTLE)) {
     app.acc += dt * app.speed;
+    const _tLogic = performance.now();
     let steps = 0;
     while (app.acc >= RULE.perf.stepDt && steps < 10) {
       // 只有本帧的第一步才快照起点：一帧跑多步时插值区间覆盖整帧，画面时间点才稳
@@ -1443,6 +1444,7 @@ function loop(t) {
     // 暂停时不会进入这段，alpha 自然冻结在暂停那一刻的中间态，不会跳到未来位置。
     app.alpha = Math.max(0, Math.min(1, app.acc / RULE.perf.stepDt));
     drainEvents(run);
+    app.msLogic = performance.now() - _tLogic;
     if (typeof window !== 'undefined' && window.__dshMobile && run.effects && run.effects.length > 60) {
       run.effects.splice(0, run.effects.length - 60);
     }
@@ -1469,7 +1471,7 @@ function loop(t) {
     const half = (typeof window !== 'undefined' && window.__dshMobile)
       && !/[?&]fps=60\b/.test(location.search);   // 手机档默认半帧重绘（≈30fps），?fps=60 可关掉做 A/B
     app.rSkip = !app.rSkip;
-    if (!half || app.rSkip) render();
+    if (!half || app.rSkip) { const _tD = performance.now(); render(); app.msDraw = performance.now() - _tD; }
   }
   app.hudT += dt;
   if (app.hudT > 0.08) { app.hudT = 0; refreshHud(); refreshUnitInfo(); }

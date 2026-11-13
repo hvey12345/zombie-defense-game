@@ -448,6 +448,8 @@ syncOrient();
     const dc = run && run.decals ? run.decals.length : 0;
     const dpr = Math.min(1.5, window.devicePixelRatio || 1);
     box.textContent = `FPS ${fps} · 僵尸 ${z} · 我方 ${u} · 叛军 ${rd} · 痕迹 ${dc} · DPR ${dpr.toFixed(1)} · ${window.innerWidth}×${window.innerHeight}`;
+    const _ap = window.__dcl || {};
+    box.textContent += ' \u00b7 \u903b ' + (_ap.msLogic || 0).toFixed(1) + 'ms \u00b7 \u7ed8 ' + (_ap.msDraw || 0).toFixed(1) + 'ms';
   }, 500);
 })();
 

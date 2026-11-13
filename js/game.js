@@ -1980,7 +1980,7 @@ function flameCone(run, tower, def) {
     }
     return true;
   };
-  for (const z of run.zombies) hitOne(z);
+  for (const z of zombieQuery(run, tower.x, tower.y, len + 8)) hitOne(z);
   run._flameFar = far.d > 0 ? far : null;
   // 叛军也吃，但只吃一半
   for (const r of (run.raiders || [])) {
@@ -2489,7 +2489,7 @@ export function ramTick(run, ent, def, dt) {
   let hitZ = false;
   const crushed = [];   // 被碾到的僵尸位置（压痕贴花用）
   const canZ = (ent._ramAt || 0) <= run.time;
-  for (const z of run.zombies) {
+  for (const z of zombieQuery(run, ent.x, ent.y, rad + 6)) {
     if (z.hp <= 0) continue;
     const dx = z.x - ent.x, dy = z.y - ent.y;
     if (Math.abs(dx) > rad || Math.abs(dy) > rad) continue;
@@ -2902,7 +2902,7 @@ function raiderSplash(run, r, tgt) {
   const f = sp.factor != null ? sp.factor : 0.5;
   const dmg = r.dmg || 5;
   const x = tgt.x, y = tgt.y;
-  for (const z of run.zombies) {
+  for (const z of zombieQuery(run, x, y, R)) {
     if (z.hp <= 0 || z === tgt.obj) continue;
     const d = Math.hypot(z.x - x, z.y - y);
     if (d > R) continue;
@@ -3112,7 +3112,7 @@ export function boomAt(run, cfg, x, y, tag) {
   }   // 导出供 tools 自测（boom-check）
   const R = cfg.radius, f = cfg.falloff != null ? cfg.falloff : 0.5;
   const dmg = cfg.dmg;
-  for (const z of run.zombies) {
+  for (const z of zombieQuery(run, x, y, R)) {
     if (z.hp <= 0) continue;
     const d = Math.hypot(z.x - x, z.y - y);
     if (d > R) continue;
@@ -3603,6 +3603,51 @@ function buildingAim(b, px, py) {
 
 // 目标网格：按 tile 分桶，把「僵尸找最近单位」从全表扫描降为邻域查询。
 // 只在 stepRun 每帧重建一次（O(n)），查询侧只遍历半径内的桶。
+// ---- 僵尸空间网格（仅手机档启用，桌面/node 走原全表，数值完全不变）----------
+const ZGRID_TILES = 3;                 // 每格 3 个地形格
+function zgOn() {
+  return typeof window !== 'undefined' && window.__dshMobile;
+}
+export function buildZombieGrid(run) {
+  if (!zgOn()) { run._zg = null; return; }
+  const T = run.map.tile;
+  const cell = T * ZGRID_TILES;
+  const cols = Math.max(1, Math.ceil((run.map.w * T) / cell));
+  const rows = Math.max(1, Math.ceil((run.map.h * T) / cell));
+  const buckets = new Array(cols * rows);
+  for (const z of run.zombies) {
+    if (!(z.hp > 0)) continue;
+    let cx = (z.x / cell) | 0, cy = (z.y / cell) | 0;
+    if (cx < 0) cx = 0; else if (cx >= cols) cx = cols - 1;
+    if (cy < 0) cy = 0; else if (cy >= rows) cy = rows - 1;
+    const k = cy * cols + cx;
+    const b = buckets[k];
+    if (b) b.push(z); else buckets[k] = [z];
+  }
+  run._zg = { cell, cols, rows, buckets };
+  run._zgFrame = run.frame;
+}
+
+// 取圆 (x,y,r) 覆盖到的所有僵尸；调用方仍自己做精确距离判定
+export function zombieQuery(run, x, y, r) {
+  const g2 = run._zg;
+  if (!g2 || run._zgFrame !== run.frame) return run.zombies;
+  const out = [];
+  const c0 = Math.max(0, ((x - r) / g2.cell) | 0);
+  const c1 = Math.min(g2.cols - 1, ((x + r) / g2.cell) | 0);
+  const r0 = Math.max(0, ((y - r) / g2.cell) | 0);
+  const r1 = Math.min(g2.rows - 1, ((y + r) / g2.cell) | 0);
+  for (let cy = r0; cy <= r1; cy++) {
+    const row = cy * g2.cols;
+    for (let cx = c0; cx <= c1; cx++) {
+      const b = g2.buckets[row + cx];
+      if (!b) continue;
+      for (let i = 0; i < b.length; i++) out.push(b[i]);
+    }
+  }
+  return out;
+}
+
 export function buildTargetGrid(run) {
   const T = run.map.tile;
   const gu = new Map();
@@ -3971,14 +4016,14 @@ export function stepMines(run) {
     // 已被打碎（hp 归零）⇒ 当场引爆，不再等僵尸踩；否则等僵尸进触发半径
     let hit = f.hp <= 0;
     if (!hit) {
-      for (const z of run.zombies) {
+      for (const z of zombieQuery(run, cx, cy, cfg.radius)) {
         if (z.hp <= 0) continue;
         if (Math.hypot(z.x - cx, z.y - cy) <= cfg.radius) { hit = true; break; }
       }
     }
     if (!hit) continue;
     const R = cfg.splash.radius, fk = cfg.splash.factor;
-    for (const z of run.zombies) {
+    for (const z of zombieQuery(run, cx, cy, R)) {
       if (z.hp <= 0) continue;
       const d = Math.hypot(z.x - cx, z.y - cy);
       if (d > R) continue;
@@ -5565,7 +5610,7 @@ export function heroSweep(run, u) {
   const reach = (S.reach != null ? S.reach : 20) + (u.r || 8);
   let n = 0;
   const hits = [];   // 命中的僵尸（特效与音效要用）
-  for (const z of run.zombies) {
+  for (const z of zombieQuery(run, u.x, u.y, reach + 24)) {
     if (z.hp <= 0) continue;
     const dx = z.x - u.x, dy = z.y - u.y;
     const d = Math.hypot(dx, dy);
@@ -5631,7 +5676,7 @@ export function heroSweep(run, u) {
 
 function heroGrenade(run, x, y, cfg) {
   const R = cfg.radius, f = cfg.falloff, dmg = cfg.dmg;
-  for (const z of run.zombies) {
+  for (const z of zombieQuery(run, x, y, R + 24)) {
     if (z.hp <= 0) continue;
     const d = Math.hypot(z.x - x, z.y - y);
     if (d > R + (z.r || 0)) continue;
@@ -6025,14 +6070,14 @@ function tickSkills(run, dt) {
           const acidVehR = rd.type === '载具' ? (z2.vsVehicle || 1.5) : 1;
           hurtUnit(run, r, z2.dps * z2.gap * acidVehR * falloffK(dd, z2.r, edge), 0, 0);
         }
-        for (const z of run.zombies) {
+        for (const z of zombieQuery(run, z2.x, z2.y, z2.r)) {
           if (z.hp <= 0) continue;
           const d = Math.hypot(z.x - z2.x, z.y - z2.y);
           if (d > z2.r) continue;
           z.hp -= z2.dps * allyMul * z2.gap * falloffK(d, z2.r, edge);
         }
       } else {
-        for (const z of run.zombies) {
+        for (const z of zombieQuery(run, z2.x, z2.y, z2.r)) {
           if (z.hp <= 0) continue;
           const d = Math.hypot(z.x - z2.x, z.y - z2.y);
           if (d > z2.r) continue;
@@ -6097,7 +6142,7 @@ export function hitAt(run, owner, def, x, y) {   // 导出供 tools 自测（ff-
   if (def.splash) {
     const R = def.splash.radius, f = def.splash.factor;
     let killed = 0;
-    for (const z of run.zombies) {
+    for (const z of zombieQuery(run, x, y, R)) {
       if (z.hp <= 0) continue;
       const dz = Math.hypot(z.x - x, z.y - y);
       if (dz > R) continue;
@@ -6130,7 +6175,7 @@ export function hitAt(run, owner, def, x, y) {   // 导出供 tools 自测（ff-
   }
   // 单体：找落点附近最近的僵尸
   let best = null, bd = Infinity;
-  for (const z of run.zombies) {
+  for (const z of zombieQuery(run, x, y, 26)) {
     if (z.hp <= 0) continue;
     const d = (z.x - x) ** 2 + (z.y - y) ** 2;
     if (d <= 26 * 26 && d < bd) { bd = d; best = z; }
@@ -6235,6 +6280,7 @@ function stepFx(run, dt) {
 }
 
 export function stepRun(run, dt, snap) {
+  if (typeof window !== 'undefined' && window.__dshMobile) buildZombieGrid(run);   // 手机档：每帧 O(n) 重建
   buildTargetGrid(run);
   // 核心升级三选一：窗口结束自动选第一张（不阻塞游戏推进）
   if (run.pendingPerk) {

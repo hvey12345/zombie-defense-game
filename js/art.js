@@ -1590,7 +1590,7 @@ export function drawScene(ctx, run, view = {}) {
   }
 
   // 受伤僵尸的细血条（开关：Z）
-  if (view.zbar) {
+  if (view.zbar && run.zombies.length <= 260) {
     for (const z of run.zombies) {
       if (z.hp >= z.maxHp || z.boss) continue;
       if (!inView(z.x, z.y)) continue;
