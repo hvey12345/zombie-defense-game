@@ -3876,10 +3876,40 @@ export function zombiesInRoom(run, b) {
   return n;
 }
 // 找身边一栋「可进入的城区建筑」（基地/兵营/工厂有 room，excluded）
+// 驻守建筑按格索引：避免每只僵尸每帧扫全表建筑（尸潮时这是最大热点）
+function garrisonCells(run) {
+  const map = run.map;
+  const n = map.buildings.length;
+  if (run._gbIdx && run._gbN === n) return run._gbIdx;
+  const T = map.tile, pad = T * 0.55;
+  const idx = new Map();
+  for (let i = 0; i < n; i++) {
+    const b = map.buildings[i];
+    if (!b || !b.garrison || !b.destructible) continue;
+    b._gord = i;
+    const x0 = Math.floor((b.x * T - pad) / T), x1 = Math.floor(((b.x + b.w) * T + pad) / T);
+    const y0 = Math.floor((b.y * T - pad) / T), y1 = Math.floor(((b.y + b.h) * T + pad) / T);
+    for (let ty = y0; ty <= y1; ty++) {
+      for (let tx = x0; tx <= x1; tx++) {
+        const k = tx + ',' + ty;
+        let a = idx.get(k);
+        if (!a) { a = []; idx.set(k, a); }
+        a.push(b);
+      }
+    }
+  }
+  run._gbIdx = idx;
+  run._gbN = n;
+  return idx;
+}
 function zRoomNear(run, z) {
   const T = run.map.tile;
   let best = null, bestD = Infinity;
-  for (const b of run.map.buildings) {
+  const cell = garrisonCells(run).get(Math.floor(z.x / T) + ',' + Math.floor(z.y / T));
+  if (!cell) return null;
+  // 保持原遍历顺序（map.buildings 下标），避免距离相同者取谁发生变化
+  const cand = cell.length > 1 ? cell.slice().sort((a, b) => a._gord - b._gord) : cell;
+  for (const b of cand) {
     if (!b.garrison || b.room || b.hp <= 0 || !b.destructible) continue;
     const pad = T * 0.55;
     const inX = z.x > b.x * T - pad && z.x < (b.x + b.w) * T + pad;

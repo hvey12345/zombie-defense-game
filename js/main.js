@@ -1433,13 +1433,18 @@ function loop(t) {
     app.acc += dt * app.speed;
     const _tLogic = performance.now();
     let steps = 0;
-    while (app.acc >= RULE.perf.stepDt && steps < 10) {
+    // 单帧最多补的步数随倍速自适应（4 倍速 + 30fps 也需要 8 步），但绝不无限补，
+    // 否则一旦掉帧就会越补越慢（死亡螺旋）
+    const maxSub = Math.min(12, Math.max(3, Math.ceil((app.speed * dt) / RULE.perf.stepDt) + 2));
+    while (app.acc >= RULE.perf.stepDt && steps < maxSub) {
       // 只有本帧的第一步才快照起点：一帧跑多步时插值区间覆盖整帧，画面时间点才稳
       stepRun(run, RULE.perf.stepDt, steps === 0);
       app.acc -= RULE.perf.stepDt;
       steps++;
       if (run.phase === PHASE.WON || run.phase === PHASE.LOST) break;
     }
+    // 仍严重积压（上一帧太慢）：丢弃多余逻辑时间，宁可慢放也不要积压滚雪球
+    if (app.acc > RULE.perf.stepDt * 4) app.acc = RULE.perf.stepDt * 2;
     // 渲染插值系数：acc 是还没消耗掉的逻辑时间，占一逻辑帧的比例即插值进度。
     // 暂停时不会进入这段，alpha 自然冻结在暂停那一刻的中间态，不会跳到未来位置。
     app.alpha = Math.max(0, Math.min(1, app.acc / RULE.perf.stepDt));
